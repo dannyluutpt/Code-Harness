@@ -714,9 +714,10 @@
         "default",
         "acceptEdits",
         "plan",
+        "auto",
         "bypassPermissions"
       ],
-      "description": "Permission mode. default: ask per rules; acceptEdits: auto-approve file edits; plan: read-only planning; bypassPermissions: approve everything not explicitly denied."
+      "description": "Permission mode. default: ask per rules; acceptEdits: auto-approve file edits; plan: read-only planning; auto: auto-approve edits, read-only tools and known-safe shell commands, ask for the rest; bypassPermissions: approve everything not explicitly denied."
     },
     "PermissionsClaudeConfig": {
       "type": "object",
@@ -1354,7 +1355,7 @@
         },
         "permission_mode": {
           "$ref": "#/$defs/PermissionMode",
-          "description": "Default permission mode: default, acceptEdits, plan or bypassPermissions (Claude Code compatible)"
+          "description": "Default permission mode: default, acceptEdits, plan, auto or bypassPermissions (Claude Code compatible)"
         },
         "permissions": {
           "$ref": "#/$defs/PermissionsClaudeConfig",

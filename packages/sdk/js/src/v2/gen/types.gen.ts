@@ -1875,7 +1875,7 @@ export type McpRemoteConfig = {
  */
 export type LayoutConfig = "auto" | "stretch"
 
-export type PermissionMode = "default" | "acceptEdits" | "plan" | "bypassPermissions"
+export type PermissionMode = "default" | "acceptEdits" | "plan" | "auto" | "bypassPermissions"
 
 export type PermissionsClaudeConfig = {
   allow?: Array<string>

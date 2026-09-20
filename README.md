@@ -21,7 +21,7 @@ Kiwii là một harness cho AI coding agent, tương đương Claude Code hay Co
 | Giao diện | TUI trong terminal (`kiwii`) và Web UI localhost (`kiwii web`) |
 | Chạy không tương tác | `kiwii run "..."`, `--format json`, `--continue`, `--session`, dùng được trong script và CI |
 | Provider | Anthropic, OpenAI (API key hoặc ChatGPT Plus/Pro), Google Gemini, OpenRouter, Ollama (tự phát hiện), mọi endpoint OpenAI-compatible, và hơn 150 provider khác từ models.dev |
-| Permission mode | `default`, `acceptEdits`, `plan`, `bypassPermissions` giống Claude Code, đổi bằng `Shift+Tab`; kèm allow/deny list `Bash(git *)`, `Edit(src/**)` |
+| Permission mode | `default`, `acceptEdits`, `plan`, `auto`, `bypassPermissions` giống Claude Code, đổi bằng `Shift+Tab`; kèm allow/deny list `Bash(git *)`, `Edit(src/**)` |
 | Hooks | Chạy lệnh shell tại `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SessionStart`, `SessionEnd`, `PreCompact`, `PermissionRequest`, `Notification` |
 | Ngữ cảnh | `KIWII.md` (đọc cả `AGENTS.md`, `CLAUDE.md`), bộ nhớ dài hạn tự động theo dự án, tự nén ngữ cảnh, tiếp tục phiên |
 | Mở rộng | MCP client (stdio/HTTP, OAuth), skills `SKILL.md` (đọc cả `~/.claude/skills`), slash command bằng Markdown, agent con tuỳ chỉnh, plugin |
@@ -93,7 +93,7 @@ Kiwii is a coding-agent harness on par with Claude Code and Codex CLI. It only t
 | Interfaces | Terminal TUI (`kiwii`) and a localhost web UI (`kiwii web`) |
 | Headless | `kiwii run "..."`, `--format json`, `--continue`, `--session` for scripts and CI |
 | Providers | Anthropic, OpenAI (API key or ChatGPT Plus/Pro login), Google Gemini, OpenRouter, Ollama (auto-detected), any OpenAI-compatible endpoint, and 150+ providers from models.dev |
-| Permission modes | `default`, `acceptEdits`, `plan`, `bypassPermissions` like Claude Code, cycled with `Shift+Tab`; plus allow/deny lists such as `Bash(git *)`, `Edit(src/**)` |
+| Permission modes | `default`, `acceptEdits`, `plan`, `auto`, `bypassPermissions` like Claude Code, cycled with `Shift+Tab`; plus allow/deny lists such as `Bash(git *)`, `Edit(src/**)` |
 | Hooks | Shell commands on `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SessionStart`, `SessionEnd`, `PreCompact`, `PermissionRequest`, `Notification` |
 | Context | `KIWII.md` (also reads `AGENTS.md` and `CLAUDE.md`), automatic per-project long-term memory, auto-compaction, session resume |
 | Extensibility | MCP client (stdio/HTTP with OAuth), `SKILL.md` skills (including `~/.claude/skills`), Markdown slash commands, custom subagents, plugins |
