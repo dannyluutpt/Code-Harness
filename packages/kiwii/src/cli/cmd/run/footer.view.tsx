@@ -729,7 +729,7 @@ export function RunFooterView(props: RunFooterViewProps) {
                               closePanel()
                             }}
                             onNew={() => {
-                              composer.submitText("/new")
+                              composer.submitText("/clear")
                               closePanel()
                             }}
                             onExit={props.onExit}

@@ -612,8 +612,8 @@ export function Session() {
       value: "session.undo",
       category: "Session",
       slash: {
-        name: "undo",
-        aliases: ["rewind"],
+        name: "rewind",
+        aliases: ["undo"],
       },
       run: async () => {
         const status = sync.data.session_status?.[route.sessionID]

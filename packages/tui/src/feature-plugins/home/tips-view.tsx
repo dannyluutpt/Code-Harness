@@ -68,7 +68,7 @@ function parse(tip: string): TipPart[] {
   return parts
 }
 
-const NO_MODELS_TIP = "Run {highlight}/connect{/highlight} to add an AI provider and start coding"
+const NO_MODELS_TIP = "Run {highlight}/login{/highlight} to add an AI provider and start coding"
 const NO_MODELS_PARTS = parse(NO_MODELS_TIP)
 
 function shortcutText(value: string) {
@@ -165,17 +165,17 @@ const TIPS: Tip[] = [
   "Type {highlight}@{/highlight} followed by a filename to fuzzy search and attach files",
   "Start a message with {highlight}!{/highlight} to run shell commands (e.g., {highlight}!ls -la{/highlight})",
   (shortcuts) => press(shortcuts.agentCycle(), "to cycle between Build and Plan agents"),
-  "Use {highlight}/undo{/highlight} to revert the last message and file changes",
+  "Use {highlight}/rewind{/highlight} to revert the last message and file changes",
   "Use {highlight}/redo{/highlight} to restore previously undone messages and file changes",
   "Run {highlight}/share{/highlight} to create a public kiwii.ai link",
   "Drag and drop images or PDFs into the terminal as context",
   (shortcuts) => press(shortcuts.inputPaste(), "to paste images from your clipboard into the prompt"),
   (shortcuts) => `Use ${commandText("/editor", shortcuts.editorOpen())} to compose messages in your external editor`,
   "Run {highlight}/init{/highlight} to auto-generate project rules based on your codebase",
-  (shortcuts) => `Use ${commandText("/models", shortcuts.modelList())} to switch between available AI models`,
-  (shortcuts) => `Use ${commandText("/themes", shortcuts.themeList())} to switch between ${themeCount} built-in themes`,
-  (shortcuts) => `Use ${commandText("/new", shortcuts.sessionNew())} to start a fresh conversation session`,
-  (shortcuts) => `Use ${commandText("/sessions", shortcuts.sessionList())} to list, pin, and continue sessions`,
+  (shortcuts) => `Use ${commandText("/model", shortcuts.modelList())} to switch between available AI models`,
+  (shortcuts) => `Use ${commandText("/theme", shortcuts.themeList())} to switch between ${themeCount} built-in themes`,
+  (shortcuts) => `Use ${commandText("/clear", shortcuts.sessionNew())} to start a fresh conversation session`,
+  (shortcuts) => `Use ${commandText("/resume", shortcuts.sessionList())} to list, pin, and continue sessions`,
   (shortcuts) => press(shortcuts.sessionPinToggle(), "in the session list to pin one at the top"),
   (shortcuts) =>
     shortcuts.sessionQuickSwitch1() && shortcuts.sessionQuickSwitch9()
@@ -185,7 +185,7 @@ const TIPS: Tip[] = [
   (shortcuts) => `Use ${commandText("/export", shortcuts.sessionExport())} to save the conversation as Markdown`,
   (shortcuts) => press(shortcuts.messagesCopy(), "to copy the assistant's last message to clipboard"),
   (shortcuts) => press(shortcuts.commandList(), "to see all available actions and commands"),
-  "Run {highlight}/connect{/highlight} to add API keys for 75+ supported LLM providers",
+  "Run {highlight}/login{/highlight} to add API keys for 75+ supported LLM providers",
   (shortcuts) => `The leader key is ${shortcutText(shortcuts.leader())}; combine with other keys for quick actions`,
   (shortcuts) => press(shortcuts.modelCycleRecent(), "to quickly switch between recently used models"),
   (shortcuts) => press(shortcuts.sessionSidebarToggle(), "in a session to show or hide the sidebar panel"),
@@ -275,7 +275,6 @@ const TIPS: Tip[] = [
       ? `Toggle username display in chat via the command palette (${shortcutText(shortcuts.commandList())})`
       : "Toggle username display in chat via the command palette",
   "Run {highlight}docker run -it --rm ghcr.io/dannyluutpt/Code-Harness{/highlight} in a container",
-  "Use {highlight}/connect{/highlight} with Kiwii Zen for curated, tested models",
   "Commit your project's {highlight}AGENTS.md{/highlight} file to Git for team sharing",
   "Use {highlight}/review{/highlight} to review uncommitted changes, branches, or PRs",
   (shortcuts) => `Use ${commandText("/help", shortcuts.helpShow())} to show the help dialog`,

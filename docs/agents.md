@@ -19,7 +19,7 @@ permission:
 Bạn là chuyên gia bảo mật. Chỉ báo cáo lỗ hổng thật, kèm dòng mã và cách sửa.
 ```
 
-`kiwii agent create` sinh file này bằng AI. Model gọi subagent qua tool `task` (nhiều subagent song song được), `subagent_depth` giới hạn độ sâu. Chuyển agent trong TUI bằng `Tab` hoặc `/agents`.
+`kiwii agent create` sinh file này bằng AI. Model gọi subagent qua tool `task` (nhiều subagent song song được), `subagent_depth` giới hạn độ sâu. Chuyển agent trong TUI bằng `Ctrl+Alt+A` hoặc `/agents`.
 
 ## English
 

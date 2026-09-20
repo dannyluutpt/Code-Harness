@@ -12,7 +12,7 @@ Kiwii là MCP client cho server stdio và HTTP (Streamable HTTP, fallback SSE), 
 }
 ```
 
-Lệnh: `kiwii mcp add <tên> --url ...` hoặc `--env KEY=VAL`, `kiwii mcp list`, `kiwii mcp auth <tên>` (OAuth), `kiwii mcp debug <tên>`. Tool MCP có tên `<server>_<tool>` và tuân theo `permission`/`permissions` như tool thường; prompt của server xuất hiện như slash command; `/mcps` trong TUI để bật tắt.
+Lệnh: `kiwii mcp add <tên> --url ...` hoặc `--env KEY=VAL`, `kiwii mcp list`, `kiwii mcp auth <tên>` (OAuth), `kiwii mcp debug <tên>`. Tool MCP có tên `<server>_<tool>` và tuân theo `permission`/`permissions` như tool thường; prompt của server xuất hiện như slash command; `/mcp` trong TUI để bật tắt.
 
 ## English
 

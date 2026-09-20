@@ -48,8 +48,10 @@ export function isExitCommand(input: string): boolean {
   return text === "/exit" || text === "/quit" || text === ":q"
 }
 
+// `/clear` mirrors Claude Code; `/new` stays as an alias.
 export function isNewCommand(input: string): boolean {
-  return input.trim().toLowerCase() === "/new"
+  const text = input.trim().toLowerCase()
+  return text === "/clear" || text === "/new"
 }
 
 export function createPromptHistory(items?: RunPrompt[]): PromptHistoryState {
