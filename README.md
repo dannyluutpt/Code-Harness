@@ -25,12 +25,21 @@ Kiwii là một harness cho AI coding agent, tương đương Claude Code hay Co
 | Hooks | Chạy lệnh shell tại `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SessionStart`, `SessionEnd`, `PreCompact`, `PermissionRequest`, `Notification` |
 | Ngữ cảnh | `KIWII.md` (đọc cả `AGENTS.md`, `CLAUDE.md`), bộ nhớ dài hạn tự động theo dự án, tự nén ngữ cảnh, tiếp tục phiên |
 | Mở rộng | MCP client (stdio/HTTP, OAuth), skills `SKILL.md` (đọc cả `~/.claude/skills`), slash command bằng Markdown, agent con tuỳ chỉnh, plugin |
+| Tương thích Claude Code | Mở Kiwii trong dự án cũ là dùng ngay: `CLAUDE.md`, `.claude/settings.json` (permissions, hooks, env), `.claude/commands`, `.claude/agents`, `.claude/skills`; cùng tên lệnh slash (`/clear`, `/model`, `/mcp`, `/login`, `/rewind`, `/resume`, `/permissions`, `/memory`), cờ `-p`/`-c`/`-r`, `Shift+Tab` đổi mode, `# ghi chú` lưu bộ nhớ |
 | Tools | read/write/edit/bash/glob/grep, websearch (Exa không cần key, Tavily/Brave/Parallel), webfetch, LSP, ảnh, todo, `/commit`, `/pr`, `/review`, `/init` |
 
 ### Cài đặt
 
+macOS, Linux, WSL:
+
 ```sh
 curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
 ```
 
 Hoặc tải binary cho hệ điều hành của bạn ở trang [Releases](https://github.com/dannyluutpt/Code-Harness/releases) và đặt vào `PATH`.
@@ -88,12 +97,21 @@ Kiwii is a coding-agent harness on par with Claude Code and Codex CLI. It only t
 | Hooks | Shell commands on `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SessionStart`, `SessionEnd`, `PreCompact`, `PermissionRequest`, `Notification` |
 | Context | `KIWII.md` (also reads `AGENTS.md` and `CLAUDE.md`), automatic per-project long-term memory, auto-compaction, session resume |
 | Extensibility | MCP client (stdio/HTTP with OAuth), `SKILL.md` skills (including `~/.claude/skills`), Markdown slash commands, custom subagents, plugins |
+| Claude Code compatible | Open Kiwii in an existing project and it just works: `CLAUDE.md`, `.claude/settings.json` (permissions, hooks, env), `.claude/commands`, `.claude/agents`, `.claude/skills`; same slash names (`/clear`, `/model`, `/mcp`, `/login`, `/rewind`, `/resume`, `/permissions`, `/memory`), `-p`/`-c`/`-r` flags, `Shift+Tab` mode cycling, `# note` memory |
 | Tools | read/write/edit/bash/glob/grep, web search (Exa needs no key; Tavily/Brave/Parallel), web fetch, LSP, images, todos, `/commit`, `/pr`, `/review`, `/init` |
 
 ### Install
 
+macOS, Linux, WSL:
+
 ```sh
 curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
 ```
 
 Or grab a binary from the [Releases](https://github.com/dannyluutpt/Code-Harness/releases) page and put it on your `PATH`.
