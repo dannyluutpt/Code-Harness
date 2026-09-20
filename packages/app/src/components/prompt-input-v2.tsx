@@ -13,6 +13,8 @@ import type { PromptInputProps } from "@/components/prompt-input/contracts"
 import { normalizePromptHistoryEntry, promptLength, type PromptHistoryComment } from "@/components/prompt-input/history"
 import { createPersistedPromptInputHistory } from "@/components/prompt-input/history-store"
 import { promptDesignPlaceholder, promptPlaceholder } from "@/components/prompt-input/placeholder"
+import { PromptPermissionModeControl } from "@/components/prompt-input/permission-mode"
+import { useSlashCommandRunner } from "@/components/prompt-input/slash-command"
 import { createPromptSubmit } from "@/components/prompt-input/submit"
 import { selectionFromLines, type SelectedLineRange, useFile } from "@/context/file"
 import { useComments } from "@/context/comments"
@@ -58,6 +60,7 @@ export function PromptInputV2Composer(props: PromptInputV2ComposerProps) {
         variantControlVisible={!props.controller.model.loading}
         attachKeybind={command.keybindParts("file.attach")}
         attachShortcut={command.keybind("file.attach")}
+        trailingControl={<PromptPermissionModeControl onClose={props.controller.restoreFocus} />}
         modelControl={
           <PromptInputV2ModelControl
             loading={props.controller.model.loading}
@@ -190,17 +193,13 @@ export function usePromptInputV2Controller(props: PromptInputV2ControllerProps):
     )
   }
 
-  const accepting = createMemo(() => {
-    const id = props.controls.session.id
-    if (!id) return permission.isAutoAcceptingDirectory(sdk().directory)
-    return permission.isAutoAccepting(id, sdk().directory)
-  })
   const submission = createPromptSubmit({
     prompt,
     info,
     imageAttachments: attachments,
     commentCount,
-    autoAccept: accepting,
+    permissionMode: () => permission.mode(props.controls.session.id, sdk().directory),
+    slash: useSlashCommandRunner({ model: () => props.controls.model.selection }),
     mode,
     working,
     editor: () => editor,

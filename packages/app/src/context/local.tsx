@@ -183,7 +183,9 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
       list,
       visible: agentsVisible,
       current() {
-        return pickAgent(agentsVisible() ? (scope()?.agent ?? store.current) : "build")
+        const name = scope()?.agent ?? store.current
+        // Plan permission mode selects the plan agent even while the agent picker is hidden.
+        return pickAgent(agentsVisible() || name === "plan" ? name : "build")
       },
       set(name: string | undefined) {
         const item = pickAgent(name)

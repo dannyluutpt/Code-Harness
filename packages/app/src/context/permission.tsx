@@ -14,12 +14,16 @@ import { useSettings } from "./settings"
 import { requireServerKey } from "@/utils/session-route"
 import type { ServerScope } from "@/utils/server-scope"
 import { normalizePermissionRequest } from "./global-sync/utils"
+import { ConfigPermissionV1 } from "@kiwii/core/v1/config/permission"
 import {
   acceptKey,
   directoryAcceptKey,
-  isDirectoryAutoAccepting,
   autoRespondsPermission,
-  sessionAutoAccept,
+  directoryPermissionMode,
+  migratePermissionModes,
+  permissionMode,
+  sessionPermissionMode,
+  type PermissionModes,
 } from "./permission-auto-respond"
 
 type PermissionRespondFn = (input: {
@@ -158,23 +162,12 @@ export const { use: usePermission, provider: PermissionProvider } = createSimple
       autoResponds(permission: PermissionRequest, directory?: string) {
         return selected().autoResponds(permission, directory)
       },
-      isAutoAccepting(sessionID: string, directory?: string) {
-        return selected().isAutoAccepting(sessionID, directory)
+      /** The session's mode, or the directory-level mode while no session exists yet. */
+      mode(sessionID: string | undefined, directory: string) {
+        return selected().mode(sessionID, directory)
       },
-      isAutoAcceptingDirectory(directory: string) {
-        return selected().isAutoAcceptingDirectory(directory)
-      },
-      toggleAutoAccept(sessionID: string, directory: string) {
-        selected().toggleAutoAccept(sessionID, directory)
-      },
-      toggleAutoAcceptDirectory(directory: string) {
-        selected().toggleAutoAcceptDirectory(directory)
-      },
-      enableAutoAccept(sessionID: string, directory: string) {
-        selected().enableAutoAccept(sessionID, directory)
-      },
-      disableAutoAccept(sessionID: string, directory?: string) {
-        selected().disableAutoAccept(sessionID, directory)
+      setMode(sessionID: string | undefined, directory: string, mode: ConfigPermissionV1.Mode) {
+        selected().setMode(sessionID, directory, mode)
       },
       permissionsEnabled,
       isPermissionAllowAll(directory: string) {
@@ -191,23 +184,10 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
   const [store, setStore, _, ready] = persisted(
     {
       ...Persist.serverGlobal(input.sdk.scope, "permission", ["permission.v3"]),
-      migrate(value) {
-        if (!value || typeof value !== "object" || Array.isArray(value)) return value
-
-        const data = value as Record<string, unknown>
-        if (data.autoAccept) return value
-
-        return {
-          ...data,
-          autoAccept:
-            typeof data.autoAcceptEdits === "object" && data.autoAcceptEdits && !Array.isArray(data.autoAcceptEdits)
-              ? data.autoAcceptEdits
-              : {},
-        }
-      },
+      migrate: migratePermissionModes,
     },
     createStore({
-      autoAccept: {} as Record<string, boolean>,
+      mode: {} as PermissionModes,
     }),
   )
 
@@ -217,10 +197,10 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
     const [childStore] = input.sync.child(directory)
     if (childStore.config.permission !== "allow") return
     const key = directoryAcceptKey(directory)
-    if (store.autoAccept[key] !== undefined) return
+    if (store.mode[key] !== undefined) return
     setStore(
       produce((draft) => {
-        draft.autoAccept[key] = true
+        draft.mode[key] = "bypassPermissions"
       }),
     )
   }
@@ -228,7 +208,7 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
   const MAX_RESPONDED = 1000
   const RESPONDED_TTL_MS = 60 * 60 * 1000
   const responded = new Map<string, number>()
-  const enableVersion = new Map<string, number>()
+  const modeVersion = new Map<string, number>()
   const meta = { disposed: false }
 
   function pruneResponded(now: number) {
@@ -287,16 +267,13 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
     return [...info, ...input.sync.child(directory, { bootstrap: false })[0].session]
   }
 
-  function isAutoAccepting(sessionID: string, directory?: string) {
-    return autoRespondsPermission(store.autoAccept, sessions(directory), { sessionID }, directory)
-  }
-
-  function isAutoAcceptingDirectory(directory: string) {
-    return isDirectoryAutoAccepting(store.autoAccept, directory)
+  function mode(sessionID: string | undefined, directory: string) {
+    if (!sessionID) return directoryPermissionMode(store.mode, directory)
+    return permissionMode(store.mode, sessions(directory), { sessionID }, directory)
   }
 
   function shouldAutoRespond(permission: PermissionRequest, directory?: string) {
-    return autoRespondsPermission(store.autoAccept, sessions(directory), permission, directory)
+    return autoRespondsPermission(store.mode, sessions(directory), permission, directory)
   }
 
   function isPending(permission: PermissionRequest) {
@@ -305,8 +282,8 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
   }
 
   async function shouldAutoRespondResolved(permission: PermissionRequest, directory?: string) {
-    const override = sessionAutoAccept(store.autoAccept, sessions(directory), permission, directory)
-    if (override !== undefined) return override
+    if (sessionPermissionMode(store.mode, sessions(directory), permission, directory))
+      return shouldAutoRespond(permission, directory)
     if (input.sync.session.lineage.peek(permission.sessionID)) return shouldAutoRespond(permission, directory)
     const lineage = await input.sync.session.lineage.resolve(permission.sessionID).catch(() => undefined)
     if (meta.disposed || !lineage) return false
@@ -322,13 +299,6 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
     if (!(await shouldAutoRespondResolved(permission, directory))) return
     if (meta.disposed || !current() || !isPending(permission)) return
     respondOnce(permission, directory)
-  }
-
-  function bumpEnableVersion(sessionID: string, directory?: string) {
-    const key = acceptKey(sessionID, directory)
-    const next = (enableVersion.get(key) ?? 0) + 1
-    enableVersion.set(key, next)
-    return next
   }
 
   const handlePermission = (e: PermissionEvent) => {
@@ -352,74 +322,28 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
     unsubscribe()
   })
 
-  function enableDirectory(directory: string) {
+  function setMode(sessionID: string | undefined, directory: string, next: ConfigPermissionV1.Mode) {
     if (meta.disposed) return
-    const key = directoryAcceptKey(directory)
+    const key = sessionID ? acceptKey(sessionID, directory) : directoryAcceptKey(directory)
+    const version = (modeVersion.get(key) ?? 0) + 1
+    modeVersion.set(key, version)
     setStore(
       produce((draft) => {
-        draft.autoAccept[key] = true
+        draft.mode[key] = next
+        if (sessionID) delete draft.mode[sessionID]
       }),
     )
+    if (next === "default" || next === "plan") return
 
+    // Requests that were already waiting when the mode changed get the same treatment as new ones.
     list(directory)
       .then((permissions) => {
-        if (meta.disposed) return
-        if (!isAutoAcceptingDirectory(directory)) return
+        if (meta.disposed || modeVersion.get(key) !== version) return
         for (const permission of permissions) {
-          void respondPending(permission, directory, () => isAutoAcceptingDirectory(directory))
+          void respondPending(permission, directory, () => modeVersion.get(key) === version)
         }
       })
       .catch(() => undefined)
-  }
-
-  function disableDirectory(directory: string) {
-    if (meta.disposed) return
-    const key = directoryAcceptKey(directory)
-    setStore(
-      produce((draft) => {
-        draft.autoAccept[key] = false
-      }),
-    )
-  }
-
-  function enable(sessionID: string, directory: string) {
-    if (meta.disposed) return
-    const key = acceptKey(sessionID, directory)
-    const version = bumpEnableVersion(sessionID, directory)
-    setStore(
-      produce((draft) => {
-        draft.autoAccept[key] = true
-        delete draft.autoAccept[sessionID]
-      }),
-    )
-
-    list(directory)
-      .then((permissions) => {
-        if (meta.disposed) return
-        if (enableVersion.get(key) !== version) return
-        if (!isAutoAccepting(sessionID, directory)) return
-        for (const permission of permissions) {
-          void respondPending(
-            permission,
-            directory,
-            () => enableVersion.get(key) === version && isAutoAccepting(sessionID, directory),
-          )
-        }
-      })
-      .catch(() => undefined)
-  }
-
-  function disable(sessionID: string, directory?: string) {
-    if (meta.disposed) return
-    bumpEnableVersion(sessionID, directory)
-    const key = directory ? acceptKey(sessionID, directory) : sessionID
-    setStore(
-      produce((draft) => {
-        draft.autoAccept[key] = false
-        if (!directory) return
-        delete draft.autoAccept[sessionID]
-      }),
-    )
   }
 
   const api = {
@@ -429,40 +353,11 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
       if (meta.disposed) return false
       return shouldAutoRespond(permission, directory)
     },
-    isAutoAccepting(sessionID: string, directory?: string) {
-      if (meta.disposed) return false
-      return isAutoAccepting(sessionID, directory)
+    mode(sessionID: string | undefined, directory: string): ConfigPermissionV1.Mode {
+      if (meta.disposed) return "default"
+      return mode(sessionID, directory)
     },
-    isAutoAcceptingDirectory(directory: string) {
-      if (meta.disposed) return false
-      return isAutoAcceptingDirectory(directory)
-    },
-    toggleAutoAccept(sessionID: string, directory: string) {
-      if (meta.disposed) return
-      if (isAutoAccepting(sessionID, directory)) {
-        disable(sessionID, directory)
-        return
-      }
-
-      enable(sessionID, directory)
-    },
-    toggleAutoAcceptDirectory(directory: string) {
-      if (meta.disposed) return
-      if (isAutoAcceptingDirectory(directory)) {
-        disableDirectory(directory)
-        return
-      }
-      enableDirectory(directory)
-    },
-    enableAutoAccept(sessionID: string, directory: string) {
-      if (meta.disposed) return
-      if (isAutoAccepting(sessionID, directory)) return
-      enable(sessionID, directory)
-    },
-    disableAutoAccept(sessionID: string, directory?: string) {
-      if (meta.disposed) return
-      disable(sessionID, directory)
-    },
+    setMode,
     isPermissionAllowAll(directory: string) {
       if (meta.disposed) return false
       const [childStore] = input.sync.child(directory)

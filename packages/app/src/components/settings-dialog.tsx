@@ -35,6 +35,8 @@ export function useSettingsCommand() {
       title: language.t("command.settings.open"),
       category: language.t("command.category.settings"),
       keybind: "mod+comma",
+      slash: "settings",
+      slashAliases: ["config"],
       onSelect: show,
     },
   ])

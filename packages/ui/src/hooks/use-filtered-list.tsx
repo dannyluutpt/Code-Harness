@@ -11,6 +11,8 @@ export interface FilteredListProps<T> {
   current?: T
   groupBy?: (x: T) => string
   sortBy?: (a: T, b: T) => number
+  /** Lower ranks list first among fuzzy matches, e.g. 0 for an exact hit on the primary key. Ties keep the fuzzy order. */
+  rank?: (item: T, filter: string) => number
   sortGroupsBy?: (a: { category: string; items: T[] }, b: { category: string; items: T[] }) => number
   skipFilter?: (item: T) => boolean
   onSelect?: (value: T | undefined, index: number) => void
@@ -43,7 +45,9 @@ export function useFilteredList<T>(props: FilteredListProps<T>) {
             !props.filterKeys && Array.isArray(filterable) && filterable.every((e) => typeof e === "string")
               ? (fuzzysort.go(needle, filterable).map((x) => x.target) as T[])
               : fuzzysort.go(needle, filterable, { keys: props.filterKeys! }).map((x) => x.obj)
-          return skipped.length ? [...filtered, ...skipped] : filtered
+          const rank = props.rank
+          const ranked = rank ? filtered.toSorted((a, b) => rank(a, needle) - rank(b, needle)) : filtered
+          return skipped.length ? [...ranked, ...skipped] : ranked
         },
         groupBy((x) => (props.groupBy ? props.groupBy(x) : "")),
         entries(),

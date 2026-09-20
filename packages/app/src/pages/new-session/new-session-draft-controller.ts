@@ -53,6 +53,7 @@ export function createNewSessionDraftController(workspace: { worktree: () => str
     input,
     prompt: {
       ready: prompt.ready,
+      reset: () => prompt.reset(),
       readyPromise: () => prompt.ready.promise,
     },
     project: {

@@ -108,6 +108,7 @@ export type CommandCatalogItem = {
   category?: string
   keybind?: KeybindConfig
   slash?: string
+  slashAliases?: string[]
   hidden?: boolean
 }
 
@@ -322,6 +323,7 @@ export const { use: useCommand, provider: CommandProvider } = createSimpleContex
               category: opt.category,
               keybind: opt.keybind,
               slash: opt.slash,
+              slashAliases: opt.slashAliases,
             }
           return acc
         }, {} as CommandCatalog),

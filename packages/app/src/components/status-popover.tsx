@@ -3,7 +3,7 @@ import { Icon } from "@kiwii/ui/icon"
 import { IconButtonV2 } from "@kiwii/ui/v2/icon-button-v2"
 import { Icon as IconV2 } from "@kiwii/ui/v2/icon"
 import { Popover } from "@kiwii/ui/popover"
-import { Suspense, createMemo, createSignal, lazy, Show, type JSX } from "solid-js"
+import { Suspense, createEffect, createMemo, createSignal, lazy, on, Show, type JSX } from "solid-js"
 import { useLanguage } from "@/context/language"
 import { ServerConnection, useServer } from "@/context/server"
 import { useServerSDK } from "@/context/server-sdk"
@@ -82,6 +82,11 @@ export function StatusPopover() {
   )
 }
 
+// The popover owns its open state, so the `/status` command asks for it through this module-level counter.
+const [openRequests, setOpenRequests] = createSignal(0)
+
+export const openStatusPopover = () => setOpenRequests((count) => count + 1)
+
 export function StatusPopoverV2(props: { scope?: "server" }) {
   if (props.scope === "server") return <ServerStatusPopover />
   return <DirectoryStatusPopover />
@@ -93,6 +98,7 @@ function DirectoryStatusPopover() {
   const global = useGlobal()
   const sync = useSync()
   const [shown, setShown] = createSignal(false)
+  createEffect(on(openRequests, () => setShown(true), { defer: true }))
   const serverHealth = () => global.servers.health[ServerConnection.key(server().server)]?.healthy
   const ready = createMemo(() => serverHealth() === false || (sync().data.mcp_ready && sync().data.lsp_ready))
   const attention = createMemo(() =>

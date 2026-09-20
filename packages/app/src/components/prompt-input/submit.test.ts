@@ -12,7 +12,7 @@ const sessionCreateInputs: Array<{
   model?: { id: string; providerID: string; variant?: string }
   location?: { directory: string }
 }> = []
-const enabledAutoAccept: Array<{ server: string; sessionID: string; directory: string }> = []
+const permissionModes: Array<{ server: string; sessionID: string; directory: string; mode: string }> = []
 const optimistic: Array<{
   directory?: string
   sessionID?: string
@@ -160,8 +160,8 @@ beforeAll(async () => {
 
   mock.module("@/context/permission", () => {
     const state = (server: string) => ({
-      enableAutoAccept(sessionID: string, directory: string) {
-        enabledAutoAccept.push({ server, sessionID, directory })
+      setMode(sessionID: string, directory: string, mode: string) {
+        permissionModes.push({ server, sessionID, directory, mode })
       },
     })
     return { usePermission: () => ({ currentServerState: () => state(permissionServer) }) }
@@ -282,7 +282,7 @@ beforeEach(() => {
   createdClients.length = 0
   createdSessions.length = 0
   sessionCreateInputs.length = 0
-  enabledAutoAccept.length = 0
+  permissionModes.length = 0
   optimistic.length = 0
   optimisticSeeded.length = 0
   promoted.length = 0
@@ -311,7 +311,7 @@ describe("prompt submit worktree selection", () => {
       info: () => undefined,
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => false,
+      permissionMode: () => "default" as const,
       mode: () => "shell",
       working: () => false,
       editor: () => undefined,
@@ -365,7 +365,7 @@ describe("prompt submit worktree selection", () => {
       info: () => undefined,
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => true,
+      permissionMode: () => "acceptEdits" as const,
       mode: () => "shell",
       working: () => false,
       editor: () => undefined,
@@ -384,7 +384,9 @@ describe("prompt submit worktree selection", () => {
 
     await submit.handleSubmit(event)
 
-    expect(enabledAutoAccept).toEqual([{ server: "server-a", sessionID: "session-1", directory: "/repo/worktree-a" }])
+    expect(permissionModes).toEqual([
+      { server: "server-a", sessionID: "session-1", directory: "/repo/worktree-a", mode: "acceptEdits" },
+    ])
   })
 
   test("keeps auto-accept bound to the submission server", async () => {
@@ -397,7 +399,7 @@ describe("prompt submit worktree selection", () => {
       info: () => undefined,
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => true,
+      permissionMode: () => "acceptEdits" as const,
       mode: () => "shell",
       working: () => false,
       editor: () => undefined,
@@ -417,7 +419,9 @@ describe("prompt submit worktree selection", () => {
     release()
     await result
 
-    expect(enabledAutoAccept).toEqual([{ server: "server-a", sessionID: "session-1", directory: "/repo/worktree-a" }])
+    expect(permissionModes).toEqual([
+      { server: "server-a", sessionID: "session-1", directory: "/repo/worktree-a", mode: "acceptEdits" },
+    ])
   })
 
   test("promotes drafts using the selected project's server", async () => {
@@ -427,7 +431,7 @@ describe("prompt submit worktree selection", () => {
       info: () => undefined,
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => false,
+      permissionMode: () => "default" as const,
       mode: () => "normal",
       working: () => false,
       editor: () => undefined,
@@ -456,7 +460,7 @@ describe("prompt submit worktree selection", () => {
       info: () => ({ id: "session-1" }),
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => false,
+      permissionMode: () => "default" as const,
       mode: () => "normal",
       working: () => false,
       editor: () => undefined,
@@ -505,7 +509,7 @@ describe("prompt submit worktree selection", () => {
       info: () => ({ id: "session-1" }),
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => false,
+      permissionMode: () => "default" as const,
       mode: () => "normal",
       working: () => false,
       editor: () => undefined,
@@ -544,7 +548,7 @@ describe("prompt submit worktree selection", () => {
       info: () => ({ id: "session-1" }),
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => false,
+      permissionMode: () => "default" as const,
       mode: () => "normal",
       working: () => false,
       editor: () => undefined,
@@ -572,7 +576,7 @@ describe("prompt submit worktree selection", () => {
       info: () => undefined,
       imageAttachments: () => [],
       commentCount: () => 0,
-      autoAccept: () => false,
+      permissionMode: () => "default" as const,
       mode: () => "normal",
       working: () => false,
       editor: () => undefined,
@@ -594,5 +598,39 @@ describe("prompt submit worktree selection", () => {
     expect(storedSessions["/repo/worktree-a"]).toHaveLength(1)
     expect(storedSessions["/repo/worktree-a"]?.[0]).toMatchObject({ id: "session-1", title: "New session 1" })
     expect(optimisticSeeded).toEqual([true])
+  })
+})
+
+describe("prompt submit client-side slash commands", () => {
+  test("never creates a session or sends text the slash runner handled", async () => {
+    promptValue = [{ type: "text", content: " /permissions auto ", start: 0, end: 19 }]
+    const seen: string[] = []
+    const submit = createPromptSubmit({
+      prompt,
+      info: () => undefined,
+      imageAttachments: () => [],
+      commentCount: () => 0,
+      permissionMode: () => "default" as const,
+      slash: (text) => {
+        seen.push(text)
+        return true
+      },
+      mode: () => "normal",
+      working: () => false,
+      editor: () => undefined,
+      queueScroll: () => undefined,
+      promptLength: () => 0,
+      addToHistory: () => undefined,
+      resetHistoryNavigation: () => undefined,
+      setMode: () => undefined,
+      setPopover: () => undefined,
+    })
+
+    await submit.handleSubmit({ preventDefault: () => undefined } as unknown as Event)
+
+    expect(seen).toEqual(["/permissions auto"])
+    expect(createdSessions).toEqual([])
+    expect(sentPrompts).toEqual([])
+    expect(sentCommands).toEqual([])
   })
 })

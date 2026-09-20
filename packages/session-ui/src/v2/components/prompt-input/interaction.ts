@@ -134,6 +134,8 @@ export function createPromptInputV2Controller(input: {
     items: () => input.commands(),
     key: (item) => item.id,
     filterKeys: ["trigger", "title"],
+    // An exact or prefix hit on the slash name beats fuzzy hits on titles, so `/cl` lists `/clear` first.
+    rank: (item, filter) => (item.trigger === filter ? 0 : item.trigger?.toLowerCase().startsWith(filter) ? 1 : 2),
   })
   const list = () => (state.popover.type === "context" ? contextList : commandList)
   const suggestions = () => list().flat()
