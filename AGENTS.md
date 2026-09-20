@@ -1,6 +1,6 @@
 # Kiwii – notes for coding agents
 
-Kiwii is a fork of OpenCode (see `UPSTREAM.md`). The CLI lives in `packages/kiwii`, shared services in `packages/core`.
+The CLI lives in `packages/kiwii`, shared services in `packages/core`.
 
 - Install: `bun install`. Typecheck: `bun typecheck`. Tests: `bun turbo test` or `bun test` inside a package (never from the root).
 - Build a binary: `bun run --cwd packages/kiwii build -- --single` (uses `packages/kiwii/models-snapshot.json` when models.dev is unreachable).

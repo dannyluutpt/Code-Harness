@@ -12,7 +12,7 @@
 
 ## 🇻🇳 Tiếng Việt
 
-Kiwii là một harness cho AI coding agent, tương đương Claude Code hay Codex CLI về tính năng, được fork từ [OpenCode](https://github.com/sst/opencode) (xem `UPSTREAM.md`). Kiwii không gọi về bất kỳ máy chủ nào ngoài nhà cung cấp mô hình bạn chọn.
+Kiwii là một harness cho AI coding agent, tương đương Claude Code hay Codex CLI về tính năng. Kiwii không gọi về bất kỳ máy chủ nào ngoài nhà cung cấp mô hình bạn chọn.
 
 ### Tính năng
 
@@ -75,7 +75,7 @@ bun dev                                          # chạy từ mã nguồn
 
 ## 🇬🇧 English
 
-Kiwii is a coding-agent harness on par with Claude Code and Codex CLI, forked from [OpenCode](https://github.com/sst/opencode) (see `UPSTREAM.md`). It only talks to the model provider you configure.
+Kiwii is a coding-agent harness on par with Claude Code and Codex CLI. It only talks to the model provider you configure.
 
 ### Features
 
@@ -125,4 +125,4 @@ bun dev                                          # run from source
 
 ## License
 
-MIT. Portions copyright OpenCode contributors; see `LICENSE` and `UPSTREAM.md`.
+MIT, see `LICENSE`.

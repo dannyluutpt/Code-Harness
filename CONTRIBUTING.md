@@ -1,6 +1,6 @@
 # Contributing to Kiwii
 
-Thanks for helping! Kiwii is a fork of OpenCode (MIT); see `UPSTREAM.md` for what changed.
+Thanks for helping!
 
 ## Setup
 
