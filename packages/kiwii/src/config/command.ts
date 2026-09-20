@@ -37,3 +37,23 @@ export async function load(dir: string) {
   }
   return result
 }
+
+/** Load `.claude/commands/*.md` (Claude Code layout); unparsable files are skipped, never fatal. */
+export async function loadClaude(dir: string) {
+  const result: Record<string, ConfigCommandV1.Info> = {}
+  for (const item of await Glob.scan("commands/**/*.md", { cwd: dir, absolute: true, dot: true, symlink: true })) {
+    const md = await ConfigMarkdown.parse(item).catch(() => undefined)
+    if (!md) continue
+    const name = configEntryNameFromPath(path.relative(dir, item), ["commands/"])
+    const { "allowed-tools": _tools, "argument-hint": hint, ...rest } = md.data as Record<string, unknown>
+    const config = {
+      name,
+      ...rest,
+      ...(typeof hint === "string" && typeof rest["description"] !== "string" ? { description: hint } : {}),
+      template: md.content.trim(),
+    }
+    const parsed = decodeInfo(config, { errors: "all", propertyOrder: "original" })
+    if (Exit.isSuccess(parsed)) result[name] = parsed.value
+  }
+  return result
+}

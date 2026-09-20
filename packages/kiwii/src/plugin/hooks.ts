@@ -74,13 +74,15 @@ function parseResult(stdout: string): HookResult | undefined {
   }
 }
 
+// Matchers are case-insensitive so Claude Code style `Bash` / `Edit|Write` match Kiwii's lowercase tool ids.
 function matches(matcher: string | undefined, toolName: string | undefined) {
   if (!matcher || matcher === "*") return true
   if (toolName === undefined) return true
+  const tool = toolName.toLowerCase()
   return matcher
     .split("|")
-    .map((item) => item.trim())
-    .some((item) => item === toolName || Wildcard.match(toolName, item))
+    .map((item) => item.trim().toLowerCase())
+    .some((item) => item === tool || Wildcard.match(tool, item))
 }
 
 /** Run every matching hook for an event. The first block wins; JSON results are merged. */

@@ -11,6 +11,7 @@ import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
 import PROMPT_COMMIT from "./template/commit.txt"
 import PROMPT_PR from "./template/pr.txt"
+import PROMPT_MEMORY from "./template/memory.txt"
 import { LegacyEvent } from "@kiwii/schema/legacy-event"
 
 type State = {
@@ -50,6 +51,7 @@ export const Default = {
   REVIEW: "review",
   COMMIT: "commit",
   PR: "pr",
+  MEMORY: "memory",
 } as const
 
 export interface Interface {
@@ -98,6 +100,15 @@ const layer = Layer.effect(
           return PROMPT_COMMIT.replace("${path}", ctx.worktree)
         },
         hints: hints(PROMPT_COMMIT),
+      }
+      commands[Default.MEMORY] = {
+        name: Default.MEMORY,
+        description: "show long-term memory, or save the given text to it",
+        source: "command",
+        get template() {
+          return PROMPT_MEMORY.replace("${path}", ctx.worktree)
+        },
+        hints: hints(PROMPT_MEMORY),
       }
       commands[Default.PR] = {
         name: Default.PR,

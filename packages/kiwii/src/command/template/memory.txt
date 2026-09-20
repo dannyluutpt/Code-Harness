@@ -1,0 +1,7 @@
+Long-term memory for the project at `${path}`.
+
+Arguments from the user (may be empty):
+$ARGUMENTS
+
+- If arguments were given: save them to long-term memory with the `memory` tool (action `save`, one short self-contained fact), then confirm in one line.
+- If no arguments were given: call the `memory` tool with action `list`, show the entries as a numbered list with the file path, and ask whether the user wants to add, edit or remove anything. To edit or remove entries, use the file path from the tool output and edit the Markdown file directly.
