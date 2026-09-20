@@ -18,6 +18,8 @@
 
 **Phím tắt trong TUI:** `Shift+Tab` đổi permission mode, `Tab` đổi agent, `Ctrl+P` bảng lệnh, `Ctrl+X c` nén ngữ cảnh. Slash: `/init`, `/review`, `/commit`, `/pr`, `/compact`, `/sessions`, `/models`, `/agents`, `/mcps`, `/skills`, `/undo`, `/redo`, `/export`, `/help`.
 
+**Alias theo Claude Code:** `/clear` (= `/new`), `/model` (= `/models`), `/mcp` (= `/mcps`), `/rewind` (= `/undo`), `/login` (= `/connect`), `/resume` (= `/sessions`), `/permissions` (đổi mode), `/cost` (= `/status`).
+
 **Biến môi trường hay dùng:** `KIWII_PERMISSION_MODE`, `KIWII_CONFIG`, `KIWII_CONFIG_DIR`, `KIWII_DISABLE_MEMORY`, `KIWII_DISABLE_WEBSEARCH`, `KIWII_DISABLE_OLLAMA`, `KIWII_MODELS_URL`, `KIWII_DISABLE_MODELS_FETCH`, `KIWII_LOG_LEVEL`.
 
 ## English
@@ -31,6 +33,6 @@
 | `kiwii models`, `kiwii mcp …`, `kiwii agent create`, `kiwii session …`, `kiwii export`, `kiwii import`, `kiwii pr <n>` | Catalog, MCP, agents, sessions, PR checkout |
 | `kiwii upgrade`, `kiwii uninstall`, `kiwii stats`, `kiwii debug` | Utilities |
 
-**TUI keys:** `Shift+Tab` permission mode, `Tab` agent, `Ctrl+P` command palette, `Ctrl+X c` compact. Slash commands: `/init`, `/review`, `/commit`, `/pr`, `/compact`, `/sessions`, `/models`, `/agents`, `/mcps`, `/skills`, `/undo`, `/redo`, `/export`, `/help`.
+**TUI keys:** `Shift+Tab` permission mode, `Tab` agent, `Ctrl+P` command palette, `Ctrl+X c` compact. Slash commands: `/init`, `/review`, `/commit`, `/pr`, `/compact`, `/sessions`, `/models`, `/agents`, `/mcps`, `/skills`, `/undo`, `/redo`, `/export`, `/help`. Claude Code aliases: `/clear`, `/model`, `/mcp`, `/rewind`, `/login`, `/resume`, `/permissions`, `/cost`.
 
 **Environment:** `KIWII_PERMISSION_MODE`, `KIWII_CONFIG`, `KIWII_CONFIG_DIR`, `KIWII_DISABLE_MEMORY`, `KIWII_DISABLE_WEBSEARCH`, `KIWII_DISABLE_OLLAMA`, `KIWII_MODELS_URL`, `KIWII_DISABLE_MODELS_FETCH`, `KIWII_LOG_LEVEL`.
