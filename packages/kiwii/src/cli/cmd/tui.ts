@@ -89,9 +89,9 @@ export const TuiThreadCommand = cmd({
         type: "boolean",
       })
       .option("session", {
-        alias: ["s"],
+        alias: ["s", "r"],
         type: "string",
-        describe: "session id to continue",
+        describe: "session id to continue (resume)",
       })
       .option("fork", {
         type: "boolean",

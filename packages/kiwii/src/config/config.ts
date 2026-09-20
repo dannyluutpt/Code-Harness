@@ -25,6 +25,7 @@ import { containsPath, type InstanceContext } from "../project/instance-context"
 import { ConfigV1 } from "@kiwii/core/v1/config/config"
 import { RemoteAuthError } from "@kiwii/core/v1/config/error"
 import { ConfigPermissionV1 } from "@kiwii/core/v1/config/permission"
+import { ConfigClaude } from "./claude"
 import { ConfigPluginV1 } from "@kiwii/core/v1/config/plugin"
 import { ConfigAgent } from "./agent"
 import { ConfigCommand } from "./command"
@@ -138,9 +139,7 @@ export class Service extends Context.Service<Service, Interface>()("@kiwii/Confi
 export const use = serviceUse(Service)
 
 function globalConfigFile() {
-  const candidates = ["kiwii.jsonc", "kiwii.json", "config.json"].map((file) =>
-    path.join(Global.Path.config, file),
-  )
+  const candidates = ["kiwii.jsonc", "kiwii.json", "config.json"].map((file) => path.join(Global.Path.config, file))
   for (const file of candidates) {
     if (existsSync(file)) return file
   }
@@ -244,7 +243,10 @@ const layer = Layer.effect(
       yield* Effect.promise(() => resolveLoadedPlugins(data, options.path))
       if (!data.$schema) {
         data.$schema = "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json"
-        const updated = text.replace(/^\s*\{/, '{\n  "$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json",')
+        const updated = text.replace(
+          /^\s*\{/,
+          '{\n  "$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json",',
+        )
         yield* fs.writeFileString(options.path, updated).pipe(Effect.catch(() => Effect.void))
       }
       return data
@@ -265,7 +267,14 @@ const layer = Layer.effect(
         const file = globalConfigFile()
         if (!existsSync(file)) {
           yield* fs
-            .writeWithDirs(file, JSON.stringify({ $schema: "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json" }, null, 2))
+            .writeWithDirs(
+              file,
+              JSON.stringify(
+                { $schema: "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json" },
+                null,
+                2,
+              ),
+            )
             .pipe(Effect.catch(() => Effect.void))
         }
       }
@@ -394,7 +403,9 @@ const layer = Layer.effect(
                 })
               : {}
             const remoteConfig = mergeConfig(isRecord(wellknown.config) ? wellknown.config : {}, fetchedConfig)
-            if (!remoteConfig.$schema) remoteConfig.$schema = "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json"
+            if (!remoteConfig.$schema)
+              remoteConfig.$schema =
+                "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json"
             const source = wellknownURL
             const next = yield* loadConfig(
               JSON.stringify(remoteConfig),
@@ -406,6 +417,24 @@ const layer = Layer.effect(
             )
             yield* merge(source, next, "global")
             yield* Effect.logDebug("loaded remote config from well-known", { url })
+          }
+        }
+
+        // Claude Code compatibility: import permissions, hooks and env from settings.json files at the
+        // lowest priority so kiwii.json always wins. Disabled by KIWII_DISABLE_CLAUDE_CODE.
+        const claudeDirs = process.env["KIWII_DISABLE_CLAUDE_CODE"]
+          ? []
+          : yield* fs.up({ targets: [".claude"], start: ctx.directory, stop: ctx.worktree }).pipe(Effect.orDie)
+        if (!process.env["KIWII_DISABLE_CLAUDE_CODE"]) {
+          for (const file of ConfigClaude.candidates(Global.Path.home, claudeDirs.toReversed())) {
+            const imported = yield* Effect.promise(() => ConfigClaude.load(file))
+            if (!imported) continue
+            for (const [key, value] of Object.entries(imported.env)) process.env[key] ??= value
+            yield* merge(file, {
+              ...(imported.permissions ? { permissions: imported.permissions } : {}),
+              ...(imported.hooks ? { hooks: imported.hooks } : {}),
+            } as Info)
+            yield* Effect.logDebug("imported claude code settings", { path: file })
           }
         }
 
@@ -426,6 +455,13 @@ const layer = Layer.effect(
         result.agent = result.agent || {}
         result.mode = result.mode || {}
         result.plugin = result.plugin || []
+
+        // Claude Code compatibility: `.claude/commands` and `.claude/agents` (project and ~/.claude) are
+        // loaded first so Kiwii's own directories override them.
+        for (const dir of [path.join(Global.Path.home, ".claude"), ...claudeDirs.toReversed()]) {
+          result.command = mergeDeep(yield* Effect.promise(() => ConfigCommand.load(dir)), result.command ?? {})
+          result.agent = mergeDeep(yield* Effect.promise(() => ConfigAgent.load(dir)), result.agent ?? {})
+        }
 
         const directories = yield* ConfigPaths.directories(ctx.directory, ctx.worktree)
 

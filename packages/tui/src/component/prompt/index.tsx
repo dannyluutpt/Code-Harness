@@ -1024,14 +1024,16 @@ export function Prompt(props: PromptProps) {
       sessionID = res.data.id
     }
 
-    const inputText = expandTrackedPastedText(
-      store.prompt.input,
-      input.extmarks.getAllForTypeId(promptPartTypeId).flatMap((extmark) => {
-        const partIndex = store.extmarkToPartIndex.get(extmark.id)
-        const part = partIndex === undefined ? undefined : store.prompt.parts[partIndex]
-        if (part?.type !== "text") return []
-        return [{ start: extmark.start, end: extmark.end, text: part.text }]
-      }),
+    const inputText = rememberShortcut(
+      expandTrackedPastedText(
+        store.prompt.input,
+        input.extmarks.getAllForTypeId(promptPartTypeId).flatMap((extmark) => {
+          const partIndex = store.extmarkToPartIndex.get(extmark.id)
+          const part = partIndex === undefined ? undefined : store.prompt.parts[partIndex]
+          if (part?.type !== "text") return []
+          return [{ start: extmark.start, end: extmark.end, text: part.text }]
+        }),
+      ),
     )
 
     // Filter out text parts (pasted content) since they're now expanded inline
@@ -1721,4 +1723,11 @@ export function Prompt(props: PromptProps) {
       />
     </>
   )
+}
+
+/** Claude Code parity: a message starting with `# ` is saved to long-term memory instead of being a normal prompt. */
+export function rememberShortcut(text: string) {
+  const match = text.match(/^#\s+(\S[\s\S]*)$/)
+  if (!match) return text
+  return `Save the following to long-term memory with the memory tool (action "save"), then reply with a single short confirmation line and nothing else:\n${match[1].trim()}`
 }

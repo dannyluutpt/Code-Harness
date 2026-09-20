@@ -10,6 +10,8 @@ Kiwii đọc và gộp cấu hình theo thứ tự (sau ghi đè trước):
 4. Thư mục `.kiwii/` trong dự án (`kiwii.jsonc`, `agent/`, `command/`, `skill/`, `plugin/`, `tool/`, `themes/`, `memory/`)
 5. `KIWII_CONFIG_DIR`
 
+**Tương thích Claude Code:** Kiwii cũng đọc `~/.claude/settings.json`, `.claude/settings.json`, `.claude/settings.local.json` (lấy `permissions`, `hooks`, `env`) ở mức ưu tiên thấp nhất, cùng `.claude/commands/*.md`, `.claude/agents/*.md`, `.claude/skills/` và `CLAUDE.md`. Tắt bằng `KIWII_DISABLE_CLAUDE_CODE=1`.
+
 Schema để editor gợi ý: `"$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json"`.
 
 Các khoá chính:
@@ -37,5 +39,7 @@ Các khoá chính:
 ## English
 
 Configuration is merged in this order (later wins): global `~/.config/kiwii/kiwii.json` and `~/.kiwii/`, `KIWII_CONFIG`, project `kiwii.json` files walking up to the repo root, the project `.kiwii/` directory (`kiwii.jsonc`, `agent/`, `command/`, `skill/`, `plugin/`, `tool/`, `themes/`, `memory/`), then `KIWII_CONFIG_DIR`.
+
+**Claude Code compatibility:** Kiwii also imports `permissions`, `hooks` and `env` from `~/.claude/settings.json`, `.claude/settings.json` and `.claude/settings.local.json` at the lowest priority, plus `.claude/commands/*.md`, `.claude/agents/*.md`, `.claude/skills/` and `CLAUDE.md`. Disable with `KIWII_DISABLE_CLAUDE_CODE=1`.
 
 Point your editor at the schema: `"$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json"`. The main keys are shown in the snippet above: `model`, `small_model`, `permission_mode`, `permission` (native ruleset, later rules win), `permissions` (Claude Code lists), `hooks`, `memory`, `websearch`, `instructions`, `agent`, `command`, `mcp`, `provider`, `compaction`.

@@ -1,5 +1,6 @@
 import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
+import { normalizeArgv } from "./cli/argv"
 import { RunCommand } from "./cli/cmd/run"
 import { GenerateCommand } from "./cli/cmd/generate"
 import { ProvidersCommand } from "./cli/cmd/providers"
@@ -28,7 +29,7 @@ import { errorMessage } from "./util/error"
 import { PluginCommand } from "./cli/cmd/plug"
 import { Heap } from "./cli/heap"
 
-const args = hideBin(process.argv)
+const args = normalizeArgv(hideBin(process.argv))
 
 function show(out: string) {
   const text = out.trimStart()

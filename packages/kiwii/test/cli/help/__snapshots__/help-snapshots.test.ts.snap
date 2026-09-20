@@ -362,7 +362,7 @@ Options:
       --cors             additional domains to allow for CORS                  [array] [default: []]
   -m, --model            model to use in the format of provider/model                       [string]
   -c, --continue         continue the last session                                         [boolean]
-  -s, --session          session id to continue                                             [string]
+  -s, -r, --session      session id to continue (resume)                                    [string]
       --fork             fork the session when continuing (use with --continue or --session)
                                                                                            [boolean]
       --prompt           prompt to use                                                      [string]
@@ -674,7 +674,7 @@ Options:
       --cors             additional domains to allow for CORS                  [array] [default: []]
   -m, --model            model to use in the format of provider/model                       [string]
   -c, --continue         continue the last session                                         [boolean]
-  -s, --session          session id to continue                                             [string]
+  -s, -r, --session      session id to continue (resume)                                    [string]
       --fork             fork the session when continuing (use with --continue or --session)
                                                                                            [boolean]
       --prompt           prompt to use                                                      [string]
@@ -736,7 +736,7 @@ Options:
       --cors             additional domains to allow for CORS                  [array] [default: []]
   -m, --model            model to use in the format of provider/model                       [string]
   -c, --continue         continue the last session                                         [boolean]
-  -s, --session          session id to continue                                             [string]
+  -s, -r, --session      session id to continue (resume)                                    [string]
       --fork             fork the session when continuing (use with --continue or --session)
                                                                                            [boolean]
       --prompt           prompt to use                                                      [string]
