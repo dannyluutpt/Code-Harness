@@ -53,7 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/insta
 npm i -g kiwii-ai@latest        # or bun/pnpm/yarn
 scoop install kiwii             # Windows
 choco install kiwii             # Windows
-brew install anomalyco/tap/kiwii # macOS and Linux (recommended, always up to date)
+brew install dannyluutpt/homebrew-kiwii/kiwii # macOS and Linux (recommended, always up to date)
 brew install kiwii              # macOS and Linux (official brew formula, updated less)
 sudo pacman -S kiwii            # Arch Linux (Stable)
 paru -S kiwii-bin               # Arch Linux (Latest from AUR)

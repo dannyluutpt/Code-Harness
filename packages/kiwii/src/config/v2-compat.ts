@@ -92,8 +92,9 @@ export function lower(input: unknown, source = "configuration"): Result {
   const parsed = decodeRecord(input)
   if (Option.isNone(parsed)) return { value: input, diagnostics: [] }
 
+  // Top-level `permissions` in Kiwii is the Claude Code style { allow, ask, deny } object; only the V2 array form is rejected.
   const permissions = [
-    ...(Object.hasOwn(parsed.value, "permissions") ? [["permissions"]] : []),
+    ...(Object.hasOwn(parsed.value, "permissions") && Array.isArray(parsed.value["permissions"]) ? [["permissions"]] : []),
     ...["agents", "agent", "mode"].flatMap((key) => {
       const agents = decodeRecord(parsed.value[key])
       if (Option.isNone(agents)) return []
@@ -114,7 +115,7 @@ export function lower(input: unknown, source = "configuration"): Result {
 
   const result: Record<string, unknown> = { ...parsed.value }
   const diagnostics: Diagnostic[] = []
-  for (const key of ["plugins", "providers", "websearch", "warming"])
+  for (const key of ["plugins", "providers", "warming"])
     if (Object.hasOwn(parsed.value, key)) unsupported([key], diagnostics)
 
   normalizeSettings(parsed.value, result, diagnostics)

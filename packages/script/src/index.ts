@@ -34,12 +34,14 @@ const IS_PREVIEW = CHANNEL !== "latest"
 const VERSION = await (async () => {
   if (env.KIWII_VERSION) return env.KIWII_VERSION
   if (IS_PREVIEW) return `0.0.0-${CHANNEL}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "")}`
+  // Kiwii is distributed through GitHub Releases; fall back to the workspace version when npm has no package yet.
   const version = await fetch("https://registry.npmjs.org/kiwii-ai/latest")
     .then((res) => {
       if (!res.ok) throw new Error(res.statusText)
       return res.json()
     })
-    .then((data: any) => data.version)
+    .then((data: any) => data.version as string)
+    .catch(() => rootPkg.version ?? "0.1.0")
   const [major, minor, patch] = version.split(".").map((x: string) => Number(x) || 0)
   const t = env.KIWII_BUMP?.toLowerCase()
   if (t === "major") return `${major + 1}.0.0`
@@ -53,7 +55,8 @@ const team = [
   ...(await Bun.file(teamPath)
     .text()
     .then((x) => x.split(/\r?\n/).map((x) => x.trim()))
-    .then((x) => x.filter((x) => x && !x.startsWith("#")))),
+    .then((x) => x.filter((x) => x && !x.startsWith("#")))
+    .catch(() => [] as string[])),
   ...bot,
 ]
 

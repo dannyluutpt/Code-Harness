@@ -149,7 +149,7 @@ describe("installation", () => {
         () => jsonResponse({ versions: { stable: "2.0.0" } }),
         (cmd, args) => {
           // getBrewFormula: return core formula (no tap)
-          if (cmd === "brew" && args.includes("--formula") && args.includes("anomalyco/tap/kiwii")) return ""
+          if (cmd === "brew" && args.includes("--formula") && args.includes("dannyluutpt/homebrew-kiwii/kiwii")) return ""
           if (cmd === "brew" && args.includes("--formula") && args.includes("kiwii")) return "kiwii"
           return ""
         },
@@ -168,7 +168,7 @@ describe("installation", () => {
       testLayer(
         () => jsonResponse({}), // HTTP not used for tap formula
         (cmd, args) => {
-          if (cmd === "brew" && args.includes("anomalyco/tap/kiwii") && args.includes("--formula")) return "kiwii"
+          if (cmd === "brew" && args.includes("dannyluutpt/homebrew-kiwii/kiwii") && args.includes("--formula")) return "kiwii"
           if (cmd === "brew" && args.includes("--json=v2")) return brewInfoJson
           return ""
         },
