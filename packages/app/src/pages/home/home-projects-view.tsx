@@ -70,8 +70,9 @@ export function HomeProjectsView(props: HomeProjectsViewProps) {
   return (
     <aside
       class={`
-        relative mt-6 flex min-h-0 min-w-0 flex-col gap-4 overflow-hidden
-        lg:sticky lg:top-14 lg:mt-14 lg:h-[calc(100cqh-56px)] lg:self-start lg:pt-[52px]
+        mt-6 flex min-h-0 min-w-0 flex-col gap-4 overflow-hidden
+        lg:sticky lg:top-0 lg:mt-0 lg:h-[100cqh] lg:self-start lg:border-r lg:border-v2-border-border-base
+        lg:bg-v2-background-bg-deep lg:pl-4 lg:pr-1 lg:pt-6
       `}
       aria-label={props.language.t("home.projects")}
       onWheel={(event) => {
@@ -79,7 +80,7 @@ export function HomeProjectsView(props: HomeProjectsViewProps) {
         props.onWheel(event)
       }}
     >
-      <Logo tight class="absolute left-1.5 top-1 hidden h-6 w-auto lg:block" />
+      <Logo tight class="mb-4 ml-1.5 hidden h-7 w-auto shrink-0 self-start lg:block" />
       <div class="flex h-7 min-w-0 shrink-0 items-center justify-between pl-1.5 pr-3">
         <div class="text-v2-text-text-muted [font-weight:530]">{props.language.t("home.projects")}</div>
         <Show
@@ -99,7 +100,7 @@ export function HomeProjectsView(props: HomeProjectsViewProps) {
           </TooltipV2>
         </Show>
       </div>
-      <ScrollView data-slot="home-projects-scroll" class="min-h-0 min-w-0 shrink">
+      <ScrollView data-slot="home-projects-scroll" class="min-h-0 min-w-0 flex-1">
         <Show
           when={props.servers().length > 1}
           fallback={
@@ -147,7 +148,7 @@ export function HomeProjectsView(props: HomeProjectsViewProps) {
         </Show>
       </ScrollView>
       <HomeUtilityNav
-        class="mb-8 mt-4 hidden shrink-0 lg:flex"
+        class="mb-4 mt-4 hidden shrink-0 lg:flex"
         onOpenSettings={props.onOpenSettings}
         onOpenHelp={props.onOpenHelp}
         language={props.language}

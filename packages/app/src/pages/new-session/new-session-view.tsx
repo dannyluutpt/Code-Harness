@@ -37,17 +37,21 @@ export function NewSessionView(props: {
         data-component="session-new-design"
         class="relative flex-1 min-h-0 overflow-hidden rounded-[10px] bg-v2-background-bg-deep"
       >
-        <div class="absolute inset-x-0 top-[25.375%] flex justify-center px-6">
+        {/* Chat-style layout: the wordmark fills the empty canvas, context bar and composer dock at the bottom. */}
+        <div class="absolute inset-0 flex flex-col items-center px-6 pb-6">
+          <div class="flex min-h-0 w-full flex-1 items-center justify-center">
+            <div class={NEW_SESSION_CONTENT_WIDTH}>
+              <WordmarkV2 class="h-auto w-full text-v2-background-bg-inverse" />
+            </div>
+          </div>
           <div class={NEW_SESSION_CONTENT_WIDTH}>
-            <WordmarkV2 class="h-auto w-full text-v2-background-bg-inverse" />
-            <div class="mt-8 flex flex-col gap-8">
-              <PromptInputV2Composer controller={props.input} />
+            <div class="flex flex-col gap-3">
               <Show when={props.project.empty()}>
                 <PromptProjectAddButton controller={props.project} />
               </Show>
               <Show when={props.project.selected()}>
-                <div class="flex min-h-7 min-w-0 flex-col items-center justify-center gap-0 text-v2-text-text-faint sm:flex-row">
-                  <PromptProjectSelector controller={props.project} placement="bottom" />
+                <div class="flex min-h-7 min-w-0 flex-col items-start justify-start gap-0 text-v2-text-text-faint sm:flex-row sm:items-center">
+                  <PromptProjectSelector controller={props.project} placement="top-start" />
                   <Show
                     when={props.workspace.bar.visible()}
                     fallback={
@@ -65,6 +69,7 @@ export function NewSessionView(props: {
                   </Show>
                 </div>
               </Show>
+              <PromptInputV2Composer controller={props.input} />
             </div>
           </div>
         </div>
@@ -122,13 +127,13 @@ function ProviderTip() {
 
   return (
     <Show when={presence.present()}>
-      <div class="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-10">
+      <div class="pointer-events-none absolute inset-x-0 top-4 flex justify-center px-10">
         <div
           ref={setRef}
           data-component="provider-tip"
           data-visible={visible()}
           class="group/provider-tip pointer-events-auto relative flex h-6 max-w-full items-center transition-[opacity,transform] duration-[250ms] ease-[cubic-bezier(0.215,0.61,0.355,1)] motion-reduce:transition-none"
-          classList={{ "data-[visible=false]:animate-out fade-out slide-out-to-bottom-4": true }}
+          classList={{ "data-[visible=false]:animate-out fade-out slide-out-to-top-4": true }}
         >
           <button
             type="button"
