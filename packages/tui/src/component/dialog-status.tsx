@@ -13,6 +13,8 @@ export function DialogStatus() {
   const dialog = useDialog()
 
   const enabledFormatters = createMemo(() => sync.data.formatter.filter((f) => f.enabled))
+  const models = (id: string) =>
+    Object.keys(sync.data.provider.find((provider) => provider.id === id)?.models ?? {}).length
 
   const plugins = createMemo(() => {
     const list = sync.data.config.plugin ?? []
@@ -118,6 +120,31 @@ export function DialogStatus() {
           </For>
         </box>
       )}
+      <box>
+        <text fg={theme.text}>Local models</text>
+        <For
+          each={[
+            { id: "ollama", name: "Ollama", hint: "ollama serve" },
+            { id: "llamacpp", name: "llama.cpp", hint: "llama-server -m model.gguf --jinja" },
+          ]}
+        >
+          {(item) => (
+            <box flexDirection="row" gap={1}>
+              <text flexShrink={0} fg={models(item.id) ? theme.success : theme.textMuted}>
+                •
+              </text>
+              <text fg={theme.text} wrapMode="word">
+                <b>{item.name}</b>{" "}
+                <span style={{ fg: theme.textMuted }}>
+                  {models(item.id)
+                    ? `${models(item.id)} models`
+                    : `not detected. Start it (${item.hint}), then press refresh in /model`}
+                </span>
+              </text>
+            </box>
+          )}
+        </For>
+      </box>
       <Show when={enabledFormatters().length > 0} fallback={<text fg={theme.text}>No Formatters</text>}>
         <box>
           <text fg={theme.text}>{enabledFormatters().length} Formatters</text>

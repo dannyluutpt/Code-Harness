@@ -1443,8 +1443,15 @@ const layer = Layer.effect(
         const plugins = yield* plugin.list()
 
         // now read config providers - includes any modifications from plugin config() hook
-        const ollama = yield* detectOllama(cfg.provider, cfg.disabled_providers)
-        const configProviders = Object.entries({ ...(ollama ? { ollama } : {}), ...(cfg.provider ?? {}) })
+        const [ollama, llamacpp] = yield* Effect.all(
+          [detectOllama(cfg.provider, cfg.disabled_providers), detectLlamaCpp(cfg.provider, cfg.disabled_providers)],
+          { concurrency: "unbounded" },
+        )
+        const configProviders = Object.entries({
+          ...(ollama ? { ollama } : {}),
+          ...(llamacpp ? { llamacpp } : {}),
+          ...(cfg.provider ?? {}),
+        })
         const disabled = new Set(cfg.disabled_providers ?? [])
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
 
@@ -2074,6 +2081,8 @@ export const node = LayerNode.make({
 
 export * as Provider from "./provider"
 
+// Local servers can take a moment to answer while they load a model; probes run concurrently so this is the total cost.
+const LOCAL_PROBE_TIMEOUT = 2500
 
 const OLLAMA_DEFAULT_HOST = "http://localhost:11434"
 
@@ -2091,7 +2100,7 @@ export const detectOllama = Effect.fn("Provider.detectOllama")(function* (
   const host = (process.env["OLLAMA_HOST"] ?? OLLAMA_DEFAULT_HOST).replace(/\/+$/, "")
   const base = host.startsWith("http") ? host : `http://${host}`
   const tags = yield* Effect.promise(() =>
-    fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(800) })
+    fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(LOCAL_PROBE_TIMEOUT) })
       .then((res) => (res.ok ? (res.json() as Promise<{ models?: { name: string }[] }>) : undefined))
       .catch(() => undefined),
   )
@@ -2103,6 +2112,40 @@ export const detectOllama = Effect.fn("Provider.detectOllama")(function* (
     options: { baseURL: `${base}/v1` },
     models: Object.fromEntries(
       models.map((model) => [model.name, { name: model.name, tool_call: true, temperature: true }]),
+    ),
+  }
+  return info
+})
+
+const LLAMACPP_DEFAULT_HOST = "http://localhost:8080"
+
+/**
+ * Auto-register a local llama.cpp `llama-server` as the `llamacpp` provider when it is running and not
+ * configured explicitly. Honours LLAMACPP_HOST; disable with KIWII_DISABLE_LLAMACPP or disabled_providers.
+ * Port 8080 is shared with plenty of other software, so only servers that identify as llama.cpp are used.
+ */
+export const detectLlamaCpp = Effect.fn("Provider.detectLlamaCpp")(function* (
+  configured: Record<string, unknown> | undefined,
+  disabled: ReadonlyArray<string> | undefined,
+) {
+  if (Flag.KIWII_DISABLE_LLAMACPP) return
+  if (configured?.["llamacpp"]) return
+  if (disabled?.includes("llamacpp")) return
+  const host = (process.env["LLAMACPP_HOST"] ?? LLAMACPP_DEFAULT_HOST).replace(/\/+$/, "")
+  const base = host.startsWith("http") ? host : `http://${host}`
+  const list = yield* Effect.promise(() =>
+    fetch(`${base}/v1/models`, { signal: AbortSignal.timeout(LOCAL_PROBE_TIMEOUT) })
+      .then((res) => (res.ok ? (res.json() as Promise<{ data?: { id: string; owned_by?: string }[] }>) : undefined))
+      .catch(() => undefined),
+  )
+  const models = (list?.data ?? []).filter((model) => model.owned_by === "llamacpp")
+  if (models.length === 0) return
+  const info: ConfigProviderV1.Info = {
+    name: "llama.cpp (local)",
+    npm: "@ai-sdk/openai-compatible",
+    options: { baseURL: `${base}/v1` },
+    models: Object.fromEntries(
+      models.map((model) => [model.id, { name: path.basename(model.id), tool_call: true, temperature: true }]),
     ),
   }
   return info
