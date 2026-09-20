@@ -1219,7 +1219,8 @@ export function Session() {
                           >
                             {"▰".repeat(used().filled)}
                           </span>
-                          {"▱".repeat(8 - used().filled)} {used().percent}%{"  "}
+                          <span style={{ fg: theme.border }}>{"▰".repeat(8 - used().filled)}</span> {used().percent}%
+                          {"  "}
                         </Show>
                         {money.format(info().cost ?? 0)}
                       </text>

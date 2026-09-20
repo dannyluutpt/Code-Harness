@@ -56,7 +56,9 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
             >
               <box paddingRight={1}>
                 <Show when={InstallationChannel !== "latest"}>
-                  <text fg={theme.textMuted}>{props.sessionID}</text>
+                  <text fg={theme.textMuted} wrapMode="none" truncate>
+                    {props.sessionID}
+                  </text>
                 </Show>
                 <Show when={session()!.workspaceID}>
                   <text fg={theme.textMuted}>
