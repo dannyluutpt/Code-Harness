@@ -5,6 +5,7 @@ import { isSortable, useSortable } from "@dnd-kit/solid/sortable"
 import { AutoScroller, Feedback, PointerActivationConstraints } from "@dnd-kit/dom"
 import { RestrictToVerticalAxis } from "@dnd-kit/abstract/modifiers"
 import { RestrictToElement } from "@dnd-kit/dom/modifiers"
+import { Logo } from "@kiwii/ui/logo"
 import { ScrollView } from "@kiwii/ui/scroll-view"
 import { ProjectAvatar } from "@kiwii/ui/v2/project-avatar-v2"
 import { Icon as IconV2 } from "@kiwii/ui/v2/icon"
@@ -69,7 +70,7 @@ export function HomeProjectsView(props: HomeProjectsViewProps) {
   return (
     <aside
       class={`
-        mt-6 flex min-h-0 min-w-0 flex-col gap-4 overflow-hidden
+        relative mt-6 flex min-h-0 min-w-0 flex-col gap-4 overflow-hidden
         lg:sticky lg:top-14 lg:mt-14 lg:h-[calc(100cqh-56px)] lg:self-start lg:pt-[52px]
       `}
       aria-label={props.language.t("home.projects")}
@@ -78,6 +79,7 @@ export function HomeProjectsView(props: HomeProjectsViewProps) {
         props.onWheel(event)
       }}
     >
+      <Logo tight class="absolute left-1.5 top-1 hidden h-6 w-auto lg:block" />
       <div class="flex h-7 min-w-0 shrink-0 items-center justify-between pl-1.5 pr-3">
         <div class="text-v2-text-text-muted [font-weight:530]">{props.language.t("home.projects")}</div>
         <Show

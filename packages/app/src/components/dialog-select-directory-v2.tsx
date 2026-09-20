@@ -296,7 +296,7 @@ export function DialogSelectDirectoryV2(props: DialogSelectDirectoryV2Props) {
             autofocus
             autocomplete="off"
             spellcheck={false}
-            class="!w-full"
+            class="min-w-0 !flex-1"
             onInput={(event) => {
               setInput(cleanPickerInput(event.currentTarget.value))
               setSelected("")

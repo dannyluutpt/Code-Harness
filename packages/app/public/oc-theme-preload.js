@@ -1,6 +1,6 @@
 ;(function () {
   var key = "kiwii-theme-id"
-  var themeId = localStorage.getItem(key) || "oc-2"
+  var themeId = localStorage.getItem(key) || "kiwii"
 
   if (themeId === "oc-1") {
     themeId = "oc-2"
