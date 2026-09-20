@@ -41,8 +41,9 @@ jobs:
         env:
           KIWII_DISABLE_AUTOUPDATE: "1"
           KIWII_DISABLE_MODELS_FETCH: "1"
+      # Concurrent subprocess tests each boot the CLI; cap concurrency so small runners stay within timeouts.
       - name: kiwii
-        run: bun test --timeout 30000 --only-failures
+        run: bun test --timeout 30000 --only-failures --max-concurrency 3
         working-directory: packages/kiwii
         env:
           CI: "true"
