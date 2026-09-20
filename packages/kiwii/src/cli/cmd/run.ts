@@ -1,3 +1,4 @@
+import { ConfigPermissionV1 } from "@kiwii/core/v1/config/permission"
 import type { PermissionV1 } from "@kiwii/core/v1/permission"
 import { FSUtil } from "@kiwii/core/fs-util"
 // CLI entry point for `kiwii run` and `kiwii --mini`.
@@ -239,6 +240,11 @@ export const RunCommand = effectCmd({
         describe: "run in direct interactive split-footer mode",
         default: false,
       })
+      .option("permission-mode", {
+        type: "string",
+        choices: ["default", "acceptEdits", "plan", "bypassPermissions"] as const,
+        describe: "permission mode: default, acceptEdits, plan or bypassPermissions",
+      })
       .option("auto", {
         type: "boolean",
         describe: "auto-approve permissions that are not explicitly denied (dangerous!)",
@@ -272,6 +278,16 @@ export const RunCommand = effectCmd({
       const rawMessage = [...args.message, ...(args["--"] || [])].join(" ")
       const interactive = args.mini
       const auto = args.auto || args.yolo || args["dangerously-skip-permissions"]
+      const envMode = process.env["KIWII_PERMISSION_MODE"]
+      const explicitMode = ConfigPermissionV1.isMode(args["permission-mode"])
+        ? args["permission-mode"]
+        : auto
+          ? "bypassPermissions"
+          : ConfigPermissionV1.isMode(envMode)
+            ? envMode
+            : undefined
+      // Resolved after config loads: explicit flag/env > config.permission_mode > default.
+      let mode: ConfigPermissionV1.Mode = explicitMode ?? "default"
       const thinking = interactive ? (args.thinking ?? true) : (args.thinking ?? false)
       const die = (message: string): never => {
         UI.error(message)
@@ -534,6 +550,7 @@ export const RunCommand = effectCmd({
 
       async function share(sdk: KiwiiClient, sessionID: string) {
         const cfg = await sdk.config.get()
+        if (!explicitMode && ConfigPermissionV1.isMode(cfg.data?.permission_mode)) mode = cfg.data.permission_mode
         if (!cfg.data) return
         if (cfg.data.share !== "auto" && !flags.autoShare && !args.share) return
         const res = await sdk.session.share({ sessionID }).catch((error) => {
@@ -659,6 +676,7 @@ export const RunCommand = effectCmd({
       }
 
       async function pickAgent(sdk: KiwiiClient) {
+        if (!args.agent && mode === "plan") args.agent = "plan"
         if (!args.agent) return undefined
         if (args.attach) {
           return attachAgent(sdk)
@@ -802,7 +820,7 @@ export const RunCommand = effectCmd({
               const permission = event.properties
               if (!sessions.has(permission.sessionID)) continue
 
-              if (auto) {
+              if (autoApprove(mode, permission.permission)) {
                 await client.permission.reply({
                   requestID: permission.id,
                   reply: "once",
@@ -1008,9 +1026,20 @@ export async function runMini(input: MiniCommandInput) {
     "replay-limit": input.replayLimit,
     replayLimit: input.replayLimit,
     auto: false,
+    "permission-mode": undefined,
+    permissionMode: undefined,
     yolo: false,
     "dangerously-skip-permissions": false,
     dangerouslySkipPermissions: false,
     demo: input.demo ?? false,
   })
+}
+
+const EDIT_PERMISSIONS = new Set(["edit", "write", "apply_patch", "read", "glob", "grep", "list"])
+
+/** Whether a permission request is auto-approved under a Claude Code style permission mode. */
+export function autoApprove(mode: ConfigPermissionV1.Mode, permission: string) {
+  if (mode === "bypassPermissions") return true
+  if (mode === "acceptEdits") return EDIT_PERMISSIONS.has(permission)
+  return false
 }

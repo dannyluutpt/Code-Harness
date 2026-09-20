@@ -23,6 +23,7 @@ import {
   batch,
   Show,
   on,
+  untrack,
 } from "solid-js"
 import { TuiPathsProvider, TuiStartupProvider, TuiTerminalEnvironmentProvider, useTuiStartup } from "./context/runtime"
 import { DialogProvider, useDialog } from "./ui/dialog"
@@ -38,6 +39,7 @@ import { SyncProvider, useSync } from "./context/sync"
 import { DataProvider } from "./context/data"
 import { LocationProvider } from "./context/location"
 import { LocalProvider, useLocal } from "./context/local"
+import { PERMISSION_MODES, permissionModeLabel, type PermissionMode } from "./context/permission"
 import { PermissionProvider } from "./context/permission"
 import { DialogModel } from "./component/dialog-model"
 import { useConnected } from "./component/use-connected"
@@ -114,6 +116,7 @@ const appBindingCommands = [
   "mcp.list",
   "agent.cycle",
   "agent.cycle.reverse",
+  "permission.mode",
   "variant.cycle",
   "variant.list",
   "provider.connect",
@@ -372,6 +375,12 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
   const renderer = useRenderer()
   const dialog = useDialog()
   const local = useLocal()
+  // Plan mode maps onto the built-in read-only `plan` agent; leaving it returns to `build`.
+  const syncPlanAgent = (previous: PermissionMode, next: PermissionMode) => {
+    if (previous === next) return
+    if (next === "plan") return local.agent.set("plan")
+    if (previous === "plan" && local.agent.current()?.name === "plan") local.agent.set("build")
+  }
   const kv = useKV()
   const keymap = useKiwiiKeymap()
   const event = useEvent()
@@ -381,6 +390,16 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
   const { theme, mode, setMode, locked, lock, unlock } = themeState
   const sync = useSync()
   const project = useProject()
+  const args = useArgs()
+  // Fall back to config.permission_mode when no flag/env picked a mode.
+  createEffect(() => {
+    const configured = sync.data.config.permission_mode
+    if (args.permissionMode || args.auto || !configured) return
+    if (configured === local.permission.mode) return
+    if (untrack(() => local.permission.mode) !== "default") return
+    local.permission.set(configured)
+    syncPlanAgent("default", configured)
+  })
   const exit = useExit()
   const promptRef = usePromptRef()
   const pluginRuntime = usePluginRuntime()
@@ -473,11 +492,10 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
     }
 
     if (route.data.type === "plugin") {
-      renderer.setTerminalTitle(`OC | ${route.data.id}`)
+      renderer.setTerminalTitle(`Kiwii | ${route.data.id}`)
     }
   })
 
-  const args = useArgs()
   onMount(() => {
     batch(() => {
       if (args.agent) local.agent.set(args.agent)
@@ -947,14 +965,27 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       },
       {
         name: "permission.mode",
-        title:
-          local.permission.mode === "auto" ? "Disable auto-approve permissions" : "Enable auto-approve permissions",
+        title: `Cycle permission mode (current: ${permissionModeLabel(local.permission.mode)})`,
         category: "System",
         run: () => {
-          local.permission.toggle()
+          const previous = local.permission.mode
+          local.permission.cycle()
+          syncPlanAgent(previous, local.permission.mode)
           dialog.clear()
         },
       },
+      ...PERMISSION_MODES.map((mode) => ({
+        name: `permission.mode.${mode}`,
+        title: `Permission mode: ${permissionModeLabel(mode)}`,
+        category: "System",
+        hidden: mode === local.permission.mode,
+        run: () => {
+          const previous = local.permission.mode
+          local.permission.set(mode)
+          syncPlanAgent(previous, mode)
+          dialog.clear()
+        },
+      })),
     ].map((command) => ({
       namespace: "palette",
       ...command,

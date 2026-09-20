@@ -8,6 +8,8 @@ const positiveInteger = (name: string) =>
     Config.orElse(() => Config.succeed(undefined)),
   )
 const experimental = bool("KIWII_EXPERIMENTAL")
+// Features that are on by default in Kiwii; set the env var to "false" to opt out.
+const enabledByDefault = (name: string) => Config.boolean(name).pipe(Config.withDefault(true))
 const enabledByExperimental = (name: string) =>
   Config.all({ experimental, enabled: Config.boolean(name).pipe(Config.option) }).pipe(
     Config.map((flags) => Option.getOrElse(flags.enabled, () => flags.experimental)),
@@ -42,9 +44,9 @@ export class Service extends ConfigService.Service<Service>()("@kiwii/RuntimeFla
   experimentalReferences: enabledByExperimental("KIWII_EXPERIMENTAL_REFERENCES"),
   experimentalBackgroundSubagents: enabledByExperimental("KIWII_EXPERIMENTAL_BACKGROUND_SUBAGENTS"),
   experimentalLspTy: bool("KIWII_EXPERIMENTAL_LSP_TY"),
-  experimentalLspTool: enabledByExperimental("KIWII_EXPERIMENTAL_LSP_TOOL"),
+  experimentalLspTool: enabledByDefault("KIWII_ENABLE_LSP_TOOL"),
   experimentalOxfmt: enabledByExperimental("KIWII_EXPERIMENTAL_OXFMT"),
-  experimentalPlanMode: enabledByExperimental("KIWII_EXPERIMENTAL_PLAN_MODE"),
+  experimentalPlanMode: enabledByDefault("KIWII_ENABLE_PLAN_MODE"),
   experimentalCodeMode: enabledByExperimental("KIWII_EXPERIMENTAL_CODE_MODE"),
   experimentalEventSystem: enabledByExperimental("KIWII_EXPERIMENTAL_EVENT_SYSTEM"),
   experimentalWorkspaces: enabledByExperimental("KIWII_EXPERIMENTAL_WORKSPACES"),

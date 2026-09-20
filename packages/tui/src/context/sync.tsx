@@ -31,7 +31,7 @@ import { useArgs } from "./args"
 import { batch, onMount } from "solid-js"
 import path from "path"
 import { useKV } from "./kv"
-import { usePermission } from "./permission"
+import { autoApprove, usePermission } from "./permission"
 
 const emptyConsoleState: ConsoleState = {
   consoleManagedProviders: [],
@@ -195,7 +195,7 @@ export const {
 
         case "permission.asked": {
           const request = event.properties
-          if (permission.mode === "auto") {
+          if (autoApprove(permission.mode, request.permission)) {
             void sdk.client.permission.reply({
               requestID: request.id,
               reply: "once",

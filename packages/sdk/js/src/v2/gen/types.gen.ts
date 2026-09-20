@@ -1875,6 +1875,14 @@ export type McpRemoteConfig = {
  */
 export type LayoutConfig = "auto" | "stretch"
 
+export type PermissionMode = "default" | "acceptEdits" | "plan" | "bypassPermissions"
+
+export type PermissionsClaudeConfig = {
+  allow?: Array<string>
+  ask?: Array<string>
+  deny?: Array<string>
+}
+
 export type ImageAttachmentConfig = {
   auto_resize?: boolean
   max_width?: number
@@ -2003,6 +2011,8 @@ export type Config = {
   instructions?: Array<string>
   layout?: LayoutConfig
   permission?: PermissionConfig
+  permission_mode?: PermissionMode
+  permissions?: PermissionsClaudeConfig
   tools?: {
     [key: string]: boolean
   }

@@ -105,6 +105,11 @@ export const TuiThreadCommand = cmd({
         type: "string",
         describe: "agent to use",
       })
+      .option("permission-mode", {
+        type: "string",
+        choices: ["default", "acceptEdits", "plan", "bypassPermissions"] as const,
+        describe: "permission mode: default, acceptEdits, plan or bypassPermissions",
+      })
       .option("auto", {
         type: "boolean",
         describe: "auto-approve permissions that are not explicitly denied (dangerous!)",
@@ -292,6 +297,7 @@ export const TuiThreadCommand = cmd({
               prompt,
               fork: args.fork,
               auto: args.auto || args.yolo || args["dangerously-skip-permissions"],
+              permissionMode: args["permission-mode"] ?? process.env["KIWII_PERMISSION_MODE"],
             },
           }),
         )

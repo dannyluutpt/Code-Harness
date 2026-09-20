@@ -590,6 +590,20 @@ const layer = Layer.effect(
           result.share = "auto"
         }
 
+        if (result.permissions) {
+          const converted = ConfigPermissionV1.fromClaudeRules(result.permissions)
+          const existing = result.permission ?? {}
+          result.permission = { ...existing }
+          for (const [key, rule] of Object.entries(converted)) {
+            const current = result.permission[key]
+            const base = typeof current === "string" ? { "*": current } : (current ?? {})
+            result.permission[key] = { ...base, ...(rule as Record<string, ConfigPermissionV1.Action>) }
+          }
+        }
+
+        const envMode = process.env["KIWII_PERMISSION_MODE"]
+        if (ConfigPermissionV1.isMode(envMode)) result.permission_mode = envMode
+
         if (Flag.KIWII_DISABLE_AUTOCOMPACT) {
           result.compaction = { ...result.compaction, auto: false }
         }

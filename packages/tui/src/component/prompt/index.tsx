@@ -14,6 +14,7 @@ import { registerKiwiiSpinner } from "../register-spinner"
 import path from "path"
 import { fileURLToPath } from "url"
 import { useLocal } from "../../context/local"
+import { permissionModeLabel } from "../../context/permission"
 import { Flag } from "@kiwii/core/flag/flag"
 import { tint, useTheme } from "../../context/theme"
 import { EmptyBorder, SplitBorder } from "../../ui/border"
@@ -1449,8 +1450,15 @@ export function Prompt(props: PromptProps) {
                       <text fg={fadeColor(highlight(), agentMetaAlpha())}>
                         {store.mode === "shell" ? "Shell" : Locale.titlecase(agent().name)}
                       </text>
-                      <Show when={store.mode === "normal" && local.permission.mode === "auto"}>
-                        <text fg={fadeColor(theme.textMuted, agentMetaAlpha())}>auto</text>
+                      <Show when={store.mode === "normal" && local.permission.mode !== "default"}>
+                        <text
+                          fg={fadeColor(
+                            local.permission.mode === "bypassPermissions" ? theme.warning : theme.textMuted,
+                            agentMetaAlpha(),
+                          )}
+                        >
+                          {permissionModeLabel(local.permission.mode)}
+                        </text>
                       </Show>
                       <Show when={store.mode === "normal"}>
                         <box flexDirection="row" gap={1}>
