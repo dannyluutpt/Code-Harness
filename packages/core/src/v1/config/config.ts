@@ -12,6 +12,7 @@ import { ConfigLayoutV1 } from "./layout"
 import { ConfigLSPV1 } from "./lsp"
 import { ConfigMCPV1 } from "./mcp"
 import { ConfigPermissionV1 } from "./permission"
+import { ConfigHooksV1 } from "./hooks"
 import { ConfigPluginV1 } from "./plugin"
 import { ConfigProviderV1 } from "./provider"
 import { ConfigServerV1 } from "./server"
@@ -132,6 +133,7 @@ export const Info = Schema.Struct({
   permissions: Schema.optional(ConfigPermissionV1.ClaudeRules).annotate({
     description: "Claude Code compatible allow/ask/deny lists, merged into `permission` after it",
   }),
+  hooks: Schema.optional(ConfigHooksV1.Info),
   tools: Schema.optional(Schema.Record(Schema.String, Schema.Boolean)),
   attachment: Schema.optional(ConfigAttachmentV1.Info).annotate({
     description: "Attachment processing configuration, including image size limits and resizing behavior",

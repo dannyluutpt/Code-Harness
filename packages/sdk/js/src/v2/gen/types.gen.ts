@@ -1883,6 +1883,35 @@ export type PermissionsClaudeConfig = {
   deny?: Array<string>
 }
 
+export type HookCommand = {
+  type: "command"
+  /**
+   * Shell command. Receives the event payload as JSON on stdin.
+   */
+  command: string
+  /**
+   * Timeout in seconds (default 60)
+   */
+  timeout?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+}
+
+export type HookMatcher = {
+  matcher?: string
+  hooks: Array<HookCommand>
+}
+
+export type HooksConfig = {
+  PreToolUse?: Array<HookMatcher>
+  PostToolUse?: Array<HookMatcher>
+  UserPromptSubmit?: Array<HookMatcher>
+  Stop?: Array<HookMatcher>
+  SessionStart?: Array<HookMatcher>
+  SessionEnd?: Array<HookMatcher>
+  Notification?: Array<HookMatcher>
+  PreCompact?: Array<HookMatcher>
+  PermissionRequest?: Array<HookMatcher>
+}
+
 export type ImageAttachmentConfig = {
   auto_resize?: boolean
   max_width?: number
@@ -2013,6 +2042,7 @@ export type Config = {
   permission?: PermissionConfig
   permission_mode?: PermissionMode
   permissions?: PermissionsClaudeConfig
+  hooks?: HooksConfig
   tools?: {
     [key: string]: boolean
   }
