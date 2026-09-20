@@ -1,6 +1,6 @@
 # Kiwii repository instructions
 
-This repository is Kiwii itself (a fork of OpenCode, see UPSTREAM.md). Follow AGENTS.md for the style guide.
+This repository is Kiwii itself. Follow AGENTS.md for the style guide.
 
 - `bun install`, `bun typecheck`, tests per package: `bun test` inside `packages/kiwii`, `packages/core`, `packages/tui`, `packages/ui`, `packages/session-ui`. Never run tests from the root.
 - The shipping CLI is `packages/kiwii` (v1 code paths). `packages/core` holds shared services and an in-progress v2; do not port features to v2 unless asked.
