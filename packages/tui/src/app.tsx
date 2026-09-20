@@ -42,6 +42,7 @@ import { LocalProvider, useLocal } from "./context/local"
 import { PERMISSION_MODES, permissionModeLabel, type PermissionMode } from "./context/permission"
 import { PermissionProvider } from "./context/permission"
 import { DialogModel } from "./component/dialog-model"
+import { DialogPermission } from "./component/dialog-permission"
 import { useConnected } from "./component/use-connected"
 import { DialogMcp } from "./component/dialog-mcp"
 import { DialogStatus } from "./component/dialog-status"
@@ -604,7 +605,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         suggested: route.data.type === "session",
         category: "Session",
         slashName: "clear",
-        slashAliases: ["new"],
+        slashAliases: ["new", "reset"],
         run: () => {
           route.navigate({
             type: "home",
@@ -724,7 +725,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       },
       {
         name: "variant.cycle",
-        title: "Variant cycle",
+        title: "Cycle effort",
         category: "Agent",
         run: () => {
           local.model.variant.cycle()
@@ -732,15 +733,16 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       },
       {
         name: "variant.list",
-        title: "Switch model variant",
+        title: "Switch effort",
         category: "Agent",
         hidden: local.model.variant.list().length === 0,
-        slashName: "variants",
+        slashName: "effort",
+        slashAliases: ["variants"],
         run: () => {
           if (local.model.variant.list().length === 0) {
             return toast.show({
-              title: "No variants available",
-              message: "The current model does not support any variants.",
+              title: "No effort levels available",
+              message: "The current model does not support effort levels.",
               variant: "info",
             })
           }
@@ -786,7 +788,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         name: "kiwii.status",
         title: "View status",
         slashName: "status",
-        slashAliases: ["cost"],
+        slashAliases: ["cost", "usage", "context"],
         run: () => {
           dialog.replace(() => <DialogStatus />)
         },
@@ -971,13 +973,21 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         name: "permission.mode",
         title: `Cycle permission mode (current: ${permissionModeLabel(local.permission.mode)})`,
         category: "System",
-        slashName: "permissions",
-        slashAliases: ["mode"],
         run: () => {
           const previous = local.permission.mode
           local.permission.cycle()
           syncPlanAgent(previous, local.permission.mode)
           dialog.clear()
+        },
+      },
+      {
+        name: "permission.mode.list",
+        title: "Switch permission mode",
+        category: "System",
+        slashName: "permissions",
+        slashAliases: ["mode"],
+        run: () => {
+          dialog.replace(() => <DialogPermission />)
         },
       },
       ...PERMISSION_MODES.map((mode) => ({

@@ -12,12 +12,13 @@ import type { CommandContext } from "@opentui/keymap"
 import { createEffect, createMemo, onMount, createSignal, onCleanup, on, Show, Switch, Match } from "solid-js"
 import { registerKiwiiSpinner } from "../register-spinner"
 import path from "path"
+import * as fuzzysort from "fuzzysort"
 import { fileURLToPath } from "url"
 import { useLocal } from "../../context/local"
-import { permissionModeLabel } from "../../context/permission"
+import { PERMISSION_MODE_ALIASES, permissionModeLabel } from "../../context/permission"
 import { Flag } from "@kiwii/core/flag/flag"
 import { tint, useTheme } from "../../context/theme"
-import { EmptyBorder, SplitBorder } from "../../ui/border"
+import { money, sessionUsage } from "../../util/usage"
 import { useTuiPaths, useTuiTerminalEnvironment } from "../../context/runtime"
 import { useClipboard } from "../../context/clipboard"
 import { Spinner } from "../spinner"
@@ -38,7 +39,7 @@ import { usePromptStash } from "../../prompt/stash"
 import { DialogStash } from "../dialog-stash"
 import { type AutocompleteRef, Autocomplete } from "./autocomplete"
 import { useRenderer, useTerminalDimensions, type JSX } from "@opentui/solid"
-import type { AssistantMessage, FilePart, UserMessage } from "@kiwii/sdk/v2"
+import type { FilePart, UserMessage } from "@kiwii/sdk/v2"
 import { Locale } from "../../util/locale"
 import { errorMessage } from "../../util/error"
 import { formatDuration } from "../../util/format"
@@ -52,7 +53,14 @@ import { createFadeIn } from "../../util/signal"
 import { DialogSkill } from "../dialog-skill"
 import { DialogWorkspaceUnavailable } from "../dialog-workspace-unavailable"
 import { useArgs } from "../../context/args"
-import { KIWII_BASE_MODE, useBindings, useCommandShortcut, useLeaderActive, useKiwiiKeymap } from "../../keymap"
+import {
+  KIWII_BASE_MODE,
+  useBindings,
+  useCommandShortcut,
+  useCommandSlashes,
+  useLeaderActive,
+  useKiwiiKeymap,
+} from "../../keymap"
 import { useTuiConfig } from "../../config"
 import { usePromptWorkspace } from "./workspace"
 import { usePromptMove } from "./move"
@@ -96,11 +104,6 @@ export type PromptRef = {
   focus(): void
   submit(): void
 }
-
-const money = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-})
 
 const DRAFT_RETENTION_MIN_CHARS = 20
 
@@ -167,6 +170,7 @@ export function Prompt(props: PromptProps) {
   const keymap = useKiwiiKeymap()
   const agentShortcut = useCommandShortcut("agent.cycle")
   const paletteShortcut = useCommandShortcut("command.palette.show")
+  const slashes = useCommandSlashes()
   const renderer = useRenderer()
   const exit = useExit()
   const dimensions = useTerminalDimensions()
@@ -265,19 +269,12 @@ export function Prompt(props: PromptProps) {
   const usage = createMemo(() => {
     if (!props.sessionID) return
     const session = sync.session.get(props.sessionID)
-    const msg = sync.data.message[props.sessionID] ?? []
-    const last = msg.findLast((item): item is AssistantMessage => item.role === "assistant" && item.tokens.output > 0)
-    if (!last) return
-
-    const tokens =
-      last.tokens.input + last.tokens.output + last.tokens.reasoning + last.tokens.cache.read + last.tokens.cache.write
-    if (tokens <= 0) return
-
-    const model = sync.data.provider.find((item) => item.id === last.providerID)?.models[last.modelID]
-    const pct = model?.limit.context ? `${Math.round((tokens / model.limit.context) * 100)}%` : undefined
+    const used = sessionUsage(sync.data.message[props.sessionID] ?? [], sync.data.provider)
+    if (!used) return
     const cost = session?.cost ?? 0
     return {
-      context: pct ? `${Locale.number(tokens)} (${pct})` : Locale.number(tokens),
+      context:
+        used.percent === undefined ? Locale.number(used.tokens) : `${Locale.number(used.tokens)} (${used.percent}%)`,
       cost: cost > 0 ? money.format(cost) : undefined,
     }
   })
@@ -966,6 +963,68 @@ export function Prompt(props: PromptProps) {
       void exit()
       return true
     }
+    // Client-side slash commands typed with arguments must never reach the model as plain text.
+    const slash = store.mode === "normal" ? trimmed.match(/^\/([\w-]+)(?:\s+(.+))?$/s) : null
+    if (slash && !sync.data.command.some((x) => x.name === slash[1])) {
+      const name = slash[1]!.toLowerCase()
+      const arg = slash[2]?.trim().toLowerCase()
+      if (arg && (name === "permissions" || name === "mode")) {
+        const mode = PERMISSION_MODE_ALIASES[arg]
+        if (!mode) {
+          toast.show({
+            message: `Unknown permission mode "${arg}". Use manual, accept-edits, plan, auto or bypass.`,
+            variant: "error",
+          })
+          return false
+        }
+        keymap.dispatchCommand(`permission.mode.${mode}`)
+        clearPrompt()
+        return true
+      }
+      if (arg && name === "effort") {
+        const level = local.model.variant.list().find((x) => x.toLowerCase() === arg)
+        if (!level && arg !== "default" && arg !== "auto") {
+          toast.show({
+            message: local.model.variant.list().length
+              ? `Unknown effort "${arg}". Use default, ${local.model.variant.list().join(", ")}.`
+              : "The current model does not support effort levels.",
+            variant: "error",
+          })
+          return false
+        }
+        local.model.variant.set(level)
+        clearPrompt()
+        return true
+      }
+      if (arg && (name === "model" || name === "models")) {
+        // Exact `provider/model` or model id first, then the best fuzzy match on id and display name.
+        const models = sync.data.provider.flatMap((provider) =>
+          Object.values(provider.models).map((model) => ({
+            providerID: provider.id,
+            modelID: model.id,
+            key: `${provider.id}/${model.id}`.toLowerCase(),
+            name: model.name.toLowerCase(),
+          })),
+        )
+        const match =
+          models.find((x) => x.key === arg || x.modelID.toLowerCase() === arg) ??
+          fuzzysort.go(arg, models, { keys: ["key", "name"], limit: 1 })[0]?.obj
+        if (!match) {
+          toast.show({ message: `No model matches "${arg}". Run /model to browse.`, variant: "error" })
+          return false
+        }
+        local.model.set({ providerID: match.providerID, modelID: match.modelID }, { recent: true })
+        toast.show({ message: `Model set to ${match.providerID}/${match.modelID}`, variant: "info" })
+        clearPrompt()
+        return true
+      }
+      const entry = slashes().find((x) => x.display === `/${name}` || x.aliases?.includes(`/${name}`))
+      if (entry) {
+        clearPrompt()
+        entry.onSelect()
+        return true
+      }
+    }
     const selectedModel = local.model.current()
     if (!selectedModel) {
       void promptModelWarning()
@@ -1353,172 +1412,134 @@ export function Prompt(props: PromptProps) {
       <box ref={(r: BoxRenderable) => (anchor = r)} visible={props.visible !== false} width="100%">
         <box
           width="100%"
-          border={["left"]}
+          border
+          borderStyle="rounded"
           borderColor={borderHighlight()}
-          customBorderChars={{
-            ...SplitBorder.customBorderChars,
-            bottomLeft: "╹",
-          }}
+          title={store.mode === "shell" ? " ● shell " : local.agent.current() && ` ● ${local.agent.current()!.name} `}
+          titleColor={borderHighlight()}
+          titleAlignment="left"
         >
-          <box
-            paddingLeft={2}
-            paddingRight={2}
-            paddingTop={1}
-            flexShrink={0}
-            backgroundColor={theme.backgroundElement}
-            flexGrow={1}
-            width="100%"
-          >
-            <textarea
-              width="100%"
-              placeholder={placeholderText()}
-              placeholderColor={theme.textMuted}
-              textColor={leader() ? theme.textMuted : theme.text}
-              focusedTextColor={leader() ? theme.textMuted : theme.text}
-              minHeight={1}
-              maxHeight={maxHeight()}
-              onContentChange={() => {
-                const value = input.plainText
-                setStore("prompt", "input", value)
-                auto()?.onInput(value)
-                syncExtmarksWithPromptParts()
-                setCursorVersion((value) => value + 1)
-              }}
-              onCursorChange={() => setCursorVersion((value) => value + 1)}
-              onKeyDown={(e: { preventDefault(): void }) => {
-                if (props.disabled) {
-                  e.preventDefault()
-                  return
-                }
-              }}
-              onSubmit={() => {
-                // IME: double-defer so the last composed character (e.g. Korean
-                // hangul) is flushed to plainText before we read it for submission.
-                setTimeout(() => setTimeout(() => submit(), 0), 0)
-              }}
-              onPaste={async (event: PasteEvent) => {
-                if (props.disabled) {
-                  event.preventDefault()
-                  return
-                }
+          <box paddingLeft={2} paddingRight={2} flexShrink={0} flexGrow={1}>
+            <box flexDirection="row" gap={1}>
+              <text fg={borderHighlight()} flexShrink={0} selectable={false}>
+                ❯
+              </text>
+              <box flexGrow={1} minWidth={0}>
+                <textarea
+                  width="100%"
+                  placeholder={placeholderText()}
+                  placeholderColor={theme.textMuted}
+                  textColor={leader() ? theme.textMuted : theme.text}
+                  focusedTextColor={leader() ? theme.textMuted : theme.text}
+                  minHeight={1}
+                  maxHeight={maxHeight()}
+                  onContentChange={() => {
+                    const value = input.plainText
+                    setStore("prompt", "input", value)
+                    auto()?.onInput(value)
+                    syncExtmarksWithPromptParts()
+                    setCursorVersion((value) => value + 1)
+                  }}
+                  onCursorChange={() => setCursorVersion((value) => value + 1)}
+                  onKeyDown={(e: { preventDefault(): void }) => {
+                    if (props.disabled) {
+                      e.preventDefault()
+                      return
+                    }
+                  }}
+                  onSubmit={() => {
+                    // IME: double-defer so the last composed character (e.g. Korean
+                    // hangul) is flushed to plainText before we read it for submission.
+                    setTimeout(() => setTimeout(() => submit(), 0), 0)
+                  }}
+                  onPaste={async (event: PasteEvent) => {
+                    if (props.disabled) {
+                      event.preventDefault()
+                      return
+                    }
 
-                // Normalize line endings at the boundary
-                // Windows ConPTY/Terminal often sends CR-only newlines in bracketed paste
-                // Replace CRLF first, then any remaining CR
-                const normalizedText = decodePasteBytes(event.bytes).replace(/\r\n/g, "\n").replace(/\r/g, "\n")
-                const pastedContent = normalizedText.trim()
+                    // Normalize line endings at the boundary
+                    // Windows ConPTY/Terminal often sends CR-only newlines in bracketed paste
+                    // Replace CRLF first, then any remaining CR
+                    const normalizedText = decodePasteBytes(event.bytes).replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+                    const pastedContent = normalizedText.trim()
 
-                // Windows Terminal <1.25 can surface image-only clipboard as an
-                // empty bracketed paste. Windows Terminal 1.25+ does not.
-                if (!pastedContent) {
-                  keymap.dispatchCommand("prompt.paste")
-                  return
-                }
+                    // Windows Terminal <1.25 can surface image-only clipboard as an
+                    // empty bracketed paste. Windows Terminal 1.25+ does not.
+                    if (!pastedContent) {
+                      keymap.dispatchCommand("prompt.paste")
+                      return
+                    }
 
-                // Once we cross an async boundary below, the terminal may perform its
-                // default paste unless we suppress it first and handle insertion ourselves.
-                event.preventDefault()
+                    // Once we cross an async boundary below, the terminal may perform its
+                    // default paste unless we suppress it first and handle insertion ourselves.
+                    event.preventDefault()
 
-                await pasteInputText(normalizedText)
-              }}
-              ref={(r: TextareaRenderable) => {
-                input = r
-                Object.assign(r, {
-                  getClipboardText: (text: string) => expandPastedTextPlaceholders(text, store.prompt.parts),
-                })
-                setInputTarget(r)
-                if (promptPartTypeId === 0) {
-                  promptPartTypeId = input.extmarks.registerType("prompt-part")
-                }
-                props.ref?.(ref)
-                setTimeout(() => {
-                  // setTimeout is a workaround and needs to be addressed properly
-                  if (!input || input.isDestroyed) return
-                  input.cursorColor = theme.text
-                  if (tuiConfig.cursor) input.cursorStyle = tuiConfig.cursor
-                }, 0)
-              }}
-              onMouseDown={(r: MouseEvent) => r.target?.focus()}
-              focusedBackgroundColor={theme.backgroundElement}
-              cursorColor={props.disabled ? theme.backgroundElement : theme.text}
-              cursorStyle={tuiConfig.cursor}
-              syntaxStyle={syntax()}
-            />
+                    await pasteInputText(normalizedText)
+                  }}
+                  ref={(r: TextareaRenderable) => {
+                    input = r
+                    Object.assign(r, {
+                      getClipboardText: (text: string) => expandPastedTextPlaceholders(text, store.prompt.parts),
+                    })
+                    setInputTarget(r)
+                    if (promptPartTypeId === 0) {
+                      promptPartTypeId = input.extmarks.registerType("prompt-part")
+                    }
+                    props.ref?.(ref)
+                    setTimeout(() => {
+                      // setTimeout is a workaround and needs to be addressed properly
+                      if (!input || input.isDestroyed) return
+                      input.cursorColor = theme.text
+                      if (tuiConfig.cursor) input.cursorStyle = tuiConfig.cursor
+                    }, 0)
+                  }}
+                  onMouseDown={(r: MouseEvent) => r.target?.focus()}
+                  focusedBackgroundColor={theme.background}
+                  cursorColor={props.disabled ? theme.background : theme.text}
+                  cursorStyle={tuiConfig.cursor}
+                  syntaxStyle={syntax()}
+                />
+              </box>
+            </box>
             <box flexDirection="row" flexShrink={0} paddingTop={1} gap={1} justifyContent="space-between">
               <box flexDirection="row" gap={1}>
-                <Show when={local.agent.current()} fallback={<box height={1} />}>
-                  {(agent) => (
-                    <>
-                      <text fg={fadeColor(highlight(), agentMetaAlpha())}>
-                        {store.mode === "shell" ? "Shell" : Locale.titlecase(agent().name)}
+                <Show when={local.agent.current() && store.mode === "normal"} fallback={<box height={1} />}>
+                  <box flexDirection="row" gap={1}>
+                    <text flexShrink={0} fg={fadeColor(leader() ? theme.textMuted : theme.text, modelMetaAlpha())}>
+                      {local.model.parsed().model}
+                    </text>
+                    <text fg={fadeColor(theme.textMuted, modelMetaAlpha())}>{currentProviderLabel()}</text>
+                    <Show when={showVariant()}>
+                      <text fg={fadeColor(theme.textMuted, variantMetaAlpha())}>·</text>
+                      <text>
+                        <span style={{ fg: fadeColor(theme.warning, variantMetaAlpha()), bold: true }}>
+                          {local.model.variant.current()}
+                        </span>
                       </text>
-                      <Show when={store.mode === "normal" && local.permission.mode !== "default"}>
-                        <text
-                          fg={fadeColor(
-                            local.permission.mode === "bypassPermissions" ? theme.warning : theme.textMuted,
-                            agentMetaAlpha(),
-                          )}
-                        >
-                          {permissionModeLabel(local.permission.mode)}
-                        </text>
-                      </Show>
-                      <Show when={store.mode === "normal"}>
-                        <box flexDirection="row" gap={1}>
-                          <text fg={fadeColor(theme.textMuted, modelMetaAlpha())}>·</text>
-                          <text
-                            flexShrink={0}
-                            fg={fadeColor(leader() ? theme.textMuted : theme.text, modelMetaAlpha())}
-                          >
-                            {local.model.parsed().model}
-                          </text>
-                          <text fg={fadeColor(theme.textMuted, modelMetaAlpha())}>{currentProviderLabel()}</text>
-                          <Show when={showVariant()}>
-                            <text fg={fadeColor(theme.textMuted, variantMetaAlpha())}>·</text>
-                            <text>
-                              <span style={{ fg: fadeColor(theme.warning, variantMetaAlpha()), bold: true }}>
-                                {local.model.variant.current()}
-                              </span>
-                            </text>
-                          </Show>
-                        </box>
-                      </Show>
-                    </>
-                  )}
+                    </Show>
+                  </box>
                 </Show>
               </box>
-              <Show when={hasRightContent()}>
-                <box flexDirection="row" gap={1} alignItems="center">
-                  {props.right}
-                </box>
-              </Show>
+              <box flexDirection="row" gap={1} alignItems="center">
+                <Show when={store.mode === "normal"}>
+                  <text
+                    fg={fadeColor(
+                      local.permission.mode === "bypassPermissions"
+                        ? theme.warning
+                        : local.permission.mode === "auto"
+                          ? theme.primary
+                          : theme.textMuted,
+                      agentMetaAlpha(),
+                    )}
+                  >
+                    {permissionModeLabel(local.permission.mode)}
+                  </text>
+                </Show>
+                <Show when={hasRightContent()}>{props.right}</Show>
+              </box>
             </box>
           </box>
-        </box>
-        <box
-          height={1}
-          border={["left"]}
-          borderColor={borderHighlight()}
-          customBorderChars={{
-            ...EmptyBorder,
-            vertical: theme.backgroundElement.a !== 0 ? "╹" : " ",
-          }}
-        >
-          <box
-            height={1}
-            border={["bottom"]}
-            borderColor={theme.backgroundElement}
-            customBorderChars={
-              theme.backgroundElement.a !== 0
-                ? {
-                    ...EmptyBorder,
-                    horizontal: "▀",
-                  }
-                : {
-                    ...EmptyBorder,
-                    horizontal: " ",
-                  }
-            }
-          />
         </box>
         <box width="100%" flexDirection="row" justifyContent="space-between">
           <Switch>

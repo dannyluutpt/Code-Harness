@@ -9,22 +9,20 @@ export function TodoItem(props: TodoItemProps) {
   const { theme } = useTheme()
 
   return (
-    <box flexDirection="row" gap={0}>
+    <box flexDirection="row" gap={1}>
       <text
         flexShrink={0}
-        style={{
-          fg: props.status === "in_progress" ? theme.warning : theme.textMuted,
-        }}
+        fg={
+          props.status === "completed"
+            ? theme.primary
+            : props.status === "in_progress"
+              ? theme.warning
+              : theme.textMuted
+        }
       >
-        [{props.status === "completed" ? "✓" : props.status === "in_progress" ? "•" : " "}]{" "}
+        {props.status === "completed" ? "●" : props.status === "in_progress" ? "◐" : "○"}
       </text>
-      <text
-        flexGrow={1}
-        wrapMode="word"
-        style={{
-          fg: props.status === "in_progress" ? theme.warning : theme.textMuted,
-        }}
-      >
+      <text flexGrow={1} wrapMode="word" fg={props.status === "in_progress" ? theme.text : theme.textMuted}>
         {props.content}
       </text>
     </box>

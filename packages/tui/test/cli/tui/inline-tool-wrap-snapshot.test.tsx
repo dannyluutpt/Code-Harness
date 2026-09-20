@@ -29,8 +29,7 @@ type ToolFixture = { icon: string; label: string; error?: string }
 const tools: readonly ToolFixture[] = [
   {
     icon: "✱",
-    label:
-      'Grep "KIWII.*DB|database|sqlite|drizzle|dev.*db|data.*dir|xdg|APPDATA" in packages/kiwii/src (151 matches)',
+    label: 'Grep "KIWII.*DB|database|sqlite|drizzle|dev.*db|data.*dir|xdg|APPDATA" in packages/kiwii/src (151 matches)',
   },
   {
     icon: "✱",
@@ -248,7 +247,15 @@ describe("TUI inline tool wrapping", () => {
         { type: "add", relativePath: "a.ts", filePath: "a.ts", patch: "diff", deletions: 0 },
       ]),
     ).toEqual([
-      { type: "add", relativePath: "a.ts", filePath: "a.ts", patch: "diff", deletions: 0, movePath: undefined },
+      {
+        type: "add",
+        relativePath: "a.ts",
+        filePath: "a.ts",
+        patch: "diff",
+        deletions: 0,
+        additions: undefined,
+        movePath: undefined,
+      },
     ])
     expect(parseTodos([null, { status: "pending" }, { status: "pending", content: "Safe" }])).toEqual([
       { status: "pending", content: "Safe" },
