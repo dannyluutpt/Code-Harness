@@ -652,8 +652,8 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         suggested: true,
         category: "Agent",
         slashName: "models",
-        // Bias /mo toward /models over /move without changing global fuzzy scoring.
-        slashAliases: ["mo"],
+        // Bias /mo toward /models over /move without changing global fuzzy scoring. /model mirrors Claude Code.
+        slashAliases: ["mo", "model"],
         run: () => {
           dialog.replace(() => <DialogModel />)
         },
@@ -708,6 +708,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         title: "Toggle MCPs",
         category: "Agent",
         slashName: "mcps",
+        slashAliases: ["mcp"],
         run: () => {
           dialog.replace(() => <DialogMcp />)
         },
@@ -760,6 +761,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         title: "Connect provider",
         suggested: !connected(),
         slashName: "connect",
+        slashAliases: ["login", "providers"],
         run: () => {
           dialog.replace(() => <DialogProviderList />)
         },
@@ -784,6 +786,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         name: "kiwii.status",
         title: "View status",
         slashName: "status",
+        slashAliases: ["cost"],
         run: () => {
           dialog.replace(() => <DialogStatus />)
         },
@@ -967,6 +970,8 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         name: "permission.mode",
         title: `Cycle permission mode (current: ${permissionModeLabel(local.permission.mode)})`,
         category: "System",
+        slashName: "permissions",
+        slashAliases: ["mode"],
         run: () => {
           const previous = local.permission.mode
           local.permission.cycle()

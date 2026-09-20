@@ -613,6 +613,7 @@ export function Session() {
       category: "Session",
       slash: {
         name: "undo",
+        aliases: ["rewind"],
       },
       run: async () => {
         const status = sync.data.session_status?.[route.sessionID]
