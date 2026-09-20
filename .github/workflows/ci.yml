@@ -33,6 +33,14 @@ jobs:
       - name: core
         run: bun test --only-failures
         working-directory: packages/core
+      # The kiwii suite spawns `bun src/index.ts run ...` subprocesses concurrently; warm the
+      # runtime transpiler cache once so cold starts on small runners stay within the harness timeouts.
+      - name: warm kiwii transpiler cache
+        run: bun src/index.ts --version && bun src/index.ts run --help > /dev/null
+        working-directory: packages/kiwii
+        env:
+          KIWII_DISABLE_AUTOUPDATE: "1"
+          KIWII_DISABLE_MODELS_FETCH: "1"
       - name: kiwii
         run: bun test --timeout 30000 --only-failures
         working-directory: packages/kiwii
