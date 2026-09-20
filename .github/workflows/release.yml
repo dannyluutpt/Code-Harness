@@ -49,4 +49,5 @@ jobs:
             packages/kiwii/dist/*.tar.gz
             packages/kiwii/dist/*.zip
             install
+            install.ps1
           generate_release_notes: true
