@@ -79,6 +79,8 @@ export interface CommandOption {
   category?: string
   keybind?: KeybindConfig
   slash?: string
+  /** Extra slash names for the same command, e.g. the names the TUI and Claude Code use. */
+  slashAliases?: string[]
   suggested?: boolean
   disabled?: boolean
   hidden?: boolean

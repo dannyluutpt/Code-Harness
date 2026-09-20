@@ -451,6 +451,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       title: language.t("command.session.new"),
       keybind: "mod+shift+s",
       slash: "new",
+      slashAliases: ["clear", "reset"],
       onSelect: (source) => {
         if (settings.general.newLayoutDesigns()) {
           command.trigger("tab.new", source)
@@ -464,6 +465,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       title: language.t("command.session.undo"),
       description: language.t("command.session.undo.description"),
       slash: "undo",
+      slashAliases: ["rewind"],
       disabled: !params.id || visibleUserMessages().length === 0,
       onSelect: undo,
     }),
@@ -480,6 +482,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       title: language.t("command.session.compact"),
       description: language.t("command.session.compact.description"),
       slash: "compact",
+      slashAliases: ["summarize"],
       disabled: !params.id || visibleUserMessages().length === 0,
       onSelect: compact,
     }),

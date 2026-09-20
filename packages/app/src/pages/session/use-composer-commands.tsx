@@ -53,6 +53,7 @@ export const useComposerCommands = (input: { model?: ModelSelection } = {}) => {
       description: language.t("command.model.choose.description"),
       keybind: "mod+'",
       slash: "model",
+      slashAliases: ["models"],
       onSelect: chooseModel,
     }),
     modelCommand({
@@ -68,6 +69,7 @@ export const useComposerCommands = (input: { model?: ModelSelection } = {}) => {
       description: language.t("command.agent.cycle.description"),
       keybind: "mod+.",
       slash: "agent",
+      slashAliases: ["agents"],
       disabled: !local.agent.visible(),
       onSelect: () => local.agent.move(1),
     }),
