@@ -1,129 +1,128 @@
 <p align="center">
-  <a href="https://github.com/dannyluutpt/Code-Harness">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="Kiwii logo">
-    </picture>
-  </a>
+  <img src="packages/ui/src/assets/favicon/favicon.svg" width="72" alt="Kiwii">
 </p>
-<p align="center">The open source AI coding agent.</p>
+<h1 align="center">Kiwii</h1>
+<p align="center">Coding agent cho terminal và trình duyệt, chạy hoàn toàn trên máy của bạn.<br/>A local-first coding agent for your terminal and browser.</p>
 <p align="center">
-  <a href="https://github.com/dannyluutpt/Code-Harness/discussions"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/kiwii-ai"><img alt="npm" src="https://img.shields.io/npm/v/kiwii-ai?style=flat-square" /></a>
-  <a href="https://github.com/dannyluutpt/Code-Harness/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/dannyluutpt/Code-Harness/publish.yml?style=flat-square&branch=dev" /></a>
+  <a href="https://github.com/dannyluutpt/Code-Harness/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/dannyluutpt/Code-Harness/ci.yml?style=flat-square&branch=main" /></a>
+  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-green?style=flat-square" /></a>
 </p>
-
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
-</p>
-
-[![Kiwii Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://github.com/dannyluutpt/Code-Harness)
 
 ---
 
-### Installation
+## 🇻🇳 Tiếng Việt
 
-```bash
-# YOLO
+Kiwii là một harness cho AI coding agent, tương đương Claude Code hay Codex CLI về tính năng, được fork từ [OpenCode](https://github.com/sst/opencode) (xem `UPSTREAM.md`). Kiwii không gọi về bất kỳ máy chủ nào ngoài nhà cung cấp mô hình bạn chọn.
+
+### Tính năng
+
+| | |
+|---|---|
+| Giao diện | TUI trong terminal (`kiwii`) và Web UI localhost (`kiwii web`) |
+| Chạy không tương tác | `kiwii run "..."`, `--format json`, `--continue`, `--session`, dùng được trong script và CI |
+| Provider | Anthropic, OpenAI (API key hoặc ChatGPT Plus/Pro), Google Gemini, OpenRouter, Ollama (tự phát hiện), mọi endpoint OpenAI-compatible, và hơn 150 provider khác từ models.dev |
+| Permission mode | `default`, `acceptEdits`, `plan`, `bypassPermissions` giống Claude Code, đổi bằng `Shift+Tab`; kèm allow/deny list `Bash(git *)`, `Edit(src/**)` |
+| Hooks | Chạy lệnh shell tại `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SessionStart`, `SessionEnd`, `PreCompact`, `PermissionRequest`, `Notification` |
+| Ngữ cảnh | `KIWII.md` (đọc cả `AGENTS.md`, `CLAUDE.md`), bộ nhớ dài hạn tự động theo dự án, tự nén ngữ cảnh, tiếp tục phiên |
+| Mở rộng | MCP client (stdio/HTTP, OAuth), skills `SKILL.md` (đọc cả `~/.claude/skills`), slash command bằng Markdown, agent con tuỳ chỉnh, plugin |
+| Tools | read/write/edit/bash/glob/grep, websearch (Exa không cần key, Tavily/Brave/Parallel), webfetch, LSP, ảnh, todo, `/commit`, `/pr`, `/review`, `/init` |
+
+### Cài đặt
+
+```sh
 curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash
-
-# Package managers
-npm i -g kiwii-ai@latest        # or bun/pnpm/yarn
-scoop install kiwii             # Windows
-choco install kiwii             # Windows
-brew install dannyluutpt/homebrew-kiwii/kiwii # macOS and Linux (recommended, always up to date)
-brew install kiwii              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S kiwii            # Arch Linux (Stable)
-paru -S kiwii-bin               # Arch Linux (Latest from AUR)
-mise use -g kiwii               # Any OS
-nix run nixpkgs#kiwii           # or github:dannyluutpt/Code-Harness for latest dev branch
 ```
 
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
+Hoặc tải binary cho hệ điều hành của bạn ở trang [Releases](https://github.com/dannyluutpt/Code-Harness/releases) và đặt vào `PATH`.
 
-### Desktop App (BETA)
+### Bắt đầu
 
-Kiwii is also available as a desktop application. Download directly from the [releases page](https://github.com/dannyluutpt/Code-Harness/releases) or [kiwii.ai/download](https://github.com/dannyluutpt/Code-Harness).
-
-| Platform              | Download                           |
-| --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `kiwii-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `kiwii-desktop-mac-x64.dmg`     |
-| Windows               | `kiwii-desktop-windows-x64.exe` |
-| Linux                 | `.deb`, `.rpm`, or `.AppImage`     |
-
-```bash
-# macOS (Homebrew)
-brew install --cask kiwii-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/kiwii-desktop
+```sh
+export ANTHROPIC_API_KEY=sk-...   # hoặc: kiwii auth login
+cd du-an-cua-ban
+kiwii                              # mở TUI
+kiwii run "giải thích cấu trúc repo này"
+kiwii web                          # mở Web UI tại localhost
 ```
 
-#### Installation Directory
+Gõ `/init` trong phiên đầu tiên để Kiwii tạo `KIWII.md` cho dự án. Tài liệu chi tiết trong thư mục [`docs/`](docs/).
 
-The install script respects the following priority order for the installation path:
+### Cấu hình nhanh
 
-1. `$KIWII_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if it exists or can be created)
-4. `$HOME/.kiwii/bin` - Default fallback
+`kiwii.json` trong thư mục dự án (hoặc `~/.config/kiwii/kiwii.json`):
 
-```bash
-# Examples
-KIWII_INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json",
+  "model": "anthropic/claude-sonnet-5",
+  "permission_mode": "acceptEdits",
+  "permissions": { "allow": ["Bash(bun *)"], "deny": ["Read(.env)"] },
+  "hooks": { "PreToolUse": [{ "matcher": "bash", "hooks": [{ "type": "command", "command": "./scripts/guard.sh" }] }] },
+  "mcp": { "github": { "type": "remote", "url": "https://api.githubcopilot.com/mcp/" } }
+}
 ```
 
-### Agents
+### Phát triển
 
-Kiwii includes two built-in agents you can switch between with the `Tab` key.
-
-- **build** - Default, full-access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
-
-Also included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://github.com/dannyluutpt/Code-Harness/blob/main/docs/agents).
-
-### Documentation
-
-For more info on how to configure Kiwii, [**head over to our docs**](https://github.com/dannyluutpt/Code-Harness/blob/main/docs/).
-
-### Contributing
-
-If you're interested in contributing to Kiwii, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
-
-### Building on Kiwii
-
-If you are working on a project that's related to Kiwii and is using "kiwii" as part of its name, for example "kiwii-dashboard" or "kiwii-mobile", please add a note to your README to clarify that it is not built by the Kiwii team and is not affiliated with us in any way.
+```sh
+bun install
+bun typecheck
+bun run --cwd packages/kiwii build -- --single   # binary trong packages/kiwii/dist
+bun dev                                          # chạy từ mã nguồn
+```
 
 ---
 
-**Join our community** [Discord](https://discord.gg/kiwii) | [X.com](https://x.com/kiwii)
+## 🇬🇧 English
+
+Kiwii is a coding-agent harness on par with Claude Code and Codex CLI, forked from [OpenCode](https://github.com/sst/opencode) (see `UPSTREAM.md`). It only talks to the model provider you configure.
+
+### Features
+
+| | |
+|---|---|
+| Interfaces | Terminal TUI (`kiwii`) and a localhost web UI (`kiwii web`) |
+| Headless | `kiwii run "..."`, `--format json`, `--continue`, `--session` for scripts and CI |
+| Providers | Anthropic, OpenAI (API key or ChatGPT Plus/Pro login), Google Gemini, OpenRouter, Ollama (auto-detected), any OpenAI-compatible endpoint, and 150+ providers from models.dev |
+| Permission modes | `default`, `acceptEdits`, `plan`, `bypassPermissions` like Claude Code, cycled with `Shift+Tab`; plus allow/deny lists such as `Bash(git *)`, `Edit(src/**)` |
+| Hooks | Shell commands on `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SessionStart`, `SessionEnd`, `PreCompact`, `PermissionRequest`, `Notification` |
+| Context | `KIWII.md` (also reads `AGENTS.md` and `CLAUDE.md`), automatic per-project long-term memory, auto-compaction, session resume |
+| Extensibility | MCP client (stdio/HTTP with OAuth), `SKILL.md` skills (including `~/.claude/skills`), Markdown slash commands, custom subagents, plugins |
+| Tools | read/write/edit/bash/glob/grep, web search (Exa needs no key; Tavily/Brave/Parallel), web fetch, LSP, images, todos, `/commit`, `/pr`, `/review`, `/init` |
+
+### Install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash
+```
+
+Or grab a binary from the [Releases](https://github.com/dannyluutpt/Code-Harness/releases) page and put it on your `PATH`.
+
+### Quick start
+
+```sh
+export ANTHROPIC_API_KEY=sk-...   # or: kiwii auth login
+cd your-project
+kiwii                              # TUI
+kiwii run "explain how this repo is structured"
+kiwii web                          # localhost web UI
+```
+
+Run `/init` in your first session to generate a `KIWII.md`. Full documentation lives in [`docs/`](docs/).
+
+### Configuration at a glance
+
+`kiwii.json` in the project (or `~/.config/kiwii/kiwii.json`); see the snippet in the Vietnamese section above and [`docs/config.md`](docs/config.md).
+
+### Development
+
+```sh
+bun install
+bun typecheck
+bun run --cwd packages/kiwii build -- --single   # binary in packages/kiwii/dist
+bun dev                                          # run from source
+```
+
+## License
+
+MIT. Portions copyright OpenCode contributors; see `LICENSE` and `UPSTREAM.md`.
