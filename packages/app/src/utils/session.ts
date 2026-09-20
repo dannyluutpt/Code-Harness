@@ -1,5 +1,5 @@
-import type { SessionApi, SessionInfo, SessionListInput } from "@opencode-ai/client/promise"
-import type { Session } from "@opencode-ai/sdk/v2/client"
+import type { SessionApi, SessionInfo, SessionListInput } from "@kiwii/client/promise"
+import type { Session } from "@kiwii/sdk/v2/client"
 import { withTimestampedFallback } from "./session-title"
 
 export function normalizeSessionInfo(input: SessionInfo | Session): Session {

@@ -1,12 +1,12 @@
 import { describe, expect } from "bun:test"
 import { Effect } from "effect"
-import { Catalog } from "@opencode-ai/core/catalog"
-import { Integration } from "@opencode-ai/core/integration"
-import { PluginV2 } from "@opencode-ai/core/plugin"
-import { PluginHost } from "@opencode-ai/core/plugin/host"
-import { ProviderPlugins } from "@opencode-ai/core/plugin/provider"
-import { LLMGatewayPlugin } from "@opencode-ai/core/plugin/provider/llmgateway"
-import { ProviderV2 } from "@opencode-ai/core/provider"
+import { Catalog } from "@kiwii/core/catalog"
+import { Integration } from "@kiwii/core/integration"
+import { PluginV2 } from "@kiwii/core/plugin"
+import { PluginHost } from "@kiwii/core/plugin/host"
+import { ProviderPlugins } from "@kiwii/core/plugin/provider"
+import { LLMGatewayPlugin } from "@kiwii/core/plugin/provider/llmgateway"
+import { ProviderV2 } from "@kiwii/core/provider"
 import { testEffect } from "../lib/effect"
 import { PluginTestLayer } from "./fixture"
 
@@ -46,9 +46,9 @@ describe("LLMGatewayPlugin", () => {
       yield* addPlugin()
       expect((yield* catalog.provider.get(ProviderV2.ID.make("llmgateway")))?.request.headers).toEqual({
         Existing: "value",
-        "HTTP-Referer": "https://opencode.ai/",
-        "X-Title": "opencode",
-        "X-Source": "opencode",
+        "HTTP-Referer": "https://github.com/dannyluutpt/Code-Harness",
+        "X-Title": "kiwii",
+        "X-Source": "kiwii",
       })
       expect((yield* catalog.provider.get(ProviderV2.ID.openrouter))?.request.headers).toEqual({})
     }),

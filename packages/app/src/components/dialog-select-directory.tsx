@@ -1,15 +1,15 @@
-import { useDialog } from "@opencode-ai/ui/context/dialog"
-import { Dialog } from "@opencode-ai/ui/dialog"
-import { FileIcon } from "@opencode-ai/ui/file-icon"
-import { List } from "@opencode-ai/ui/list"
-import type { ListRef } from "@opencode-ai/ui/list"
-import { getDirectory, getFilename } from "@opencode-ai/core/util/path"
+import { useDialog } from "@kiwii/ui/context/dialog"
+import { Dialog } from "@kiwii/ui/dialog"
+import { FileIcon } from "@kiwii/ui/file-icon"
+import { List } from "@kiwii/ui/list"
+import type { ListRef } from "@kiwii/ui/list"
+import { getDirectory, getFilename } from "@kiwii/core/util/path"
 import { createMemo, createResource, createSignal } from "solid-js"
 import { useLanguage } from "@/context/language"
 import { ServerConnection } from "@/context/server"
 import { useGlobal } from "@/context/global"
 import { cleanPickerInput, createDirectorySearch, displayPickerPath } from "./directory-picker-domain"
-import type { Path } from "@opencode-ai/sdk/v2/client"
+import type { Path } from "@kiwii/sdk/v2/client"
 
 interface DialogSelectDirectoryProps {
   title?: string

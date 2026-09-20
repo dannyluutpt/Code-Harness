@@ -2,11 +2,11 @@
   "$schema": "https://v2-8-13.turborepo.dev/schema.json",
   "globalEnv": [
     "CI",
-    "OPENCODE_DISABLE_SHARE"
+    "KIWII_DISABLE_SHARE"
   ],
   "globalPassThroughEnv": [
     "CI",
-    "OPENCODE_DISABLE_SHARE"
+    "KIWII_DISABLE_SHARE"
   ],
   "tasks": {
     "typecheck": {},
@@ -16,7 +16,7 @@
         "dist/**"
       ]
     },
-    "opencode#test": {
+    "kiwii#test": {
       "dependsOn": [
         "^build"
       ],
@@ -25,25 +25,25 @@
         "*"
       ]
     },
-    "@opencode-ai/core#test": {
+    "@kiwii/core#test": {
       "dependsOn": [
         "^build"
       ],
       "outputs": []
     },
-    "@opencode-ai/app#test": {
+    "@kiwii/app#test": {
       "dependsOn": [
         "^build"
       ],
       "outputs": []
     },
-    "@opencode-ai/ui#test": {
+    "@kiwii/ui#test": {
       "dependsOn": [
         "^build"
       ],
       "outputs": []
     },
-    "@opencode-ai/session-ui#test": {
+    "@kiwii/session-ui#test": {
       "dependsOn": [
         "^build"
       ],

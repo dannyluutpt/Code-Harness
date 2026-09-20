@@ -17,7 +17,7 @@ export {
   type WslInstalledDistro,
   type WslJob,
   type WslOnlineDistro,
-  type WslOpencodeCheck,
+  type WslKiwiiCheck,
   type WslRuntimeCheck,
   type WslServerConfig,
   type WslServerItem,

@@ -1,7 +1,7 @@
 import type { ThemeRegistrationResolved } from "@pierre/diffs"
 
-export const OpenCodeTheme = {
-  name: "OpenCode",
+export const KiwiiTheme = {
+  name: "Kiwii",
   bg: "var(--color-background-stronger)",
   fg: "var(--text-base)",
   colors: {

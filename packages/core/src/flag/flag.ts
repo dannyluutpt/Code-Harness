@@ -5,74 +5,74 @@ export function truthy(key: string) {
   return value === "true" || value === "1"
 }
 
-const copy = process.env["OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"]
-const fff = process.env["OPENCODE_DISABLE_FFF"]
+const copy = process.env["KIWII_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"]
+const fff = process.env["KIWII_DISABLE_FFF"]
 
 function enabledByExperimental(key: string) {
-  return process.env[key] === undefined ? truthy("OPENCODE_EXPERIMENTAL") : truthy(key)
+  return process.env[key] === undefined ? truthy("KIWII_EXPERIMENTAL") : truthy(key)
 }
 
 export const Flag = {
   OTEL_EXPORTER_OTLP_ENDPOINT: process.env["OTEL_EXPORTER_OTLP_ENDPOINT"],
   OTEL_EXPORTER_OTLP_HEADERS: process.env["OTEL_EXPORTER_OTLP_HEADERS"],
 
-  OPENCODE_AUTO_HEAP_SNAPSHOT: truthy("OPENCODE_AUTO_HEAP_SNAPSHOT"),
-  OPENCODE_GIT_BASH_PATH: process.env["OPENCODE_GIT_BASH_PATH"],
-  OPENCODE_CONFIG: process.env["OPENCODE_CONFIG"],
-  OPENCODE_CONFIG_CONTENT: process.env["OPENCODE_CONFIG_CONTENT"],
-  OPENCODE_DISABLE_AUTOUPDATE: truthy("OPENCODE_DISABLE_AUTOUPDATE"),
-  OPENCODE_ALWAYS_NOTIFY_UPDATE: truthy("OPENCODE_ALWAYS_NOTIFY_UPDATE"),
-  OPENCODE_DISABLE_PRUNE: truthy("OPENCODE_DISABLE_PRUNE"),
-  OPENCODE_DISABLE_TERMINAL_TITLE: truthy("OPENCODE_DISABLE_TERMINAL_TITLE"),
-  OPENCODE_SHOW_TTFD: truthy("OPENCODE_SHOW_TTFD"),
-  OPENCODE_DISABLE_AUTOCOMPACT: truthy("OPENCODE_DISABLE_AUTOCOMPACT"),
-  OPENCODE_DISABLE_MODELS_FETCH: truthy("OPENCODE_DISABLE_MODELS_FETCH"),
-  OPENCODE_DISABLE_MOUSE: truthy("OPENCODE_DISABLE_MOUSE"),
-  OPENCODE_FAKE_VCS: process.env["OPENCODE_FAKE_VCS"],
-  OPENCODE_SERVER_PASSWORD: process.env["OPENCODE_SERVER_PASSWORD"],
-  OPENCODE_SERVER_USERNAME: process.env["OPENCODE_SERVER_USERNAME"],
-  OPENCODE_DISABLE_FFF: fff === undefined ? process.platform === "win32" : truthy("OPENCODE_DISABLE_FFF"),
+  KIWII_AUTO_HEAP_SNAPSHOT: truthy("KIWII_AUTO_HEAP_SNAPSHOT"),
+  KIWII_GIT_BASH_PATH: process.env["KIWII_GIT_BASH_PATH"],
+  KIWII_CONFIG: process.env["KIWII_CONFIG"],
+  KIWII_CONFIG_CONTENT: process.env["KIWII_CONFIG_CONTENT"],
+  KIWII_DISABLE_AUTOUPDATE: truthy("KIWII_DISABLE_AUTOUPDATE"),
+  KIWII_ALWAYS_NOTIFY_UPDATE: truthy("KIWII_ALWAYS_NOTIFY_UPDATE"),
+  KIWII_DISABLE_PRUNE: truthy("KIWII_DISABLE_PRUNE"),
+  KIWII_DISABLE_TERMINAL_TITLE: truthy("KIWII_DISABLE_TERMINAL_TITLE"),
+  KIWII_SHOW_TTFD: truthy("KIWII_SHOW_TTFD"),
+  KIWII_DISABLE_AUTOCOMPACT: truthy("KIWII_DISABLE_AUTOCOMPACT"),
+  KIWII_DISABLE_MODELS_FETCH: truthy("KIWII_DISABLE_MODELS_FETCH"),
+  KIWII_DISABLE_MOUSE: truthy("KIWII_DISABLE_MOUSE"),
+  KIWII_FAKE_VCS: process.env["KIWII_FAKE_VCS"],
+  KIWII_SERVER_PASSWORD: process.env["KIWII_SERVER_PASSWORD"],
+  KIWII_SERVER_USERNAME: process.env["KIWII_SERVER_USERNAME"],
+  KIWII_DISABLE_FFF: fff === undefined ? process.platform === "win32" : truthy("KIWII_DISABLE_FFF"),
 
   // Experimental
-  OPENCODE_EXPERIMENTAL_FILEWATCHER: Config.boolean("OPENCODE_EXPERIMENTAL_FILEWATCHER").pipe(
+  KIWII_EXPERIMENTAL_FILEWATCHER: Config.boolean("KIWII_EXPERIMENTAL_FILEWATCHER").pipe(
     Config.withDefault(false),
   ),
-  OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER: Config.boolean("OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER").pipe(
+  KIWII_EXPERIMENTAL_DISABLE_FILEWATCHER: Config.boolean("KIWII_EXPERIMENTAL_DISABLE_FILEWATCHER").pipe(
     Config.withDefault(false),
   ),
-  OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT:
-    copy === undefined ? process.platform === "win32" : truthy("OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"),
-  OPENCODE_MODELS_URL: process.env["OPENCODE_MODELS_URL"],
-  OPENCODE_MODELS_PATH: process.env["OPENCODE_MODELS_PATH"],
-  OPENCODE_DB: process.env["OPENCODE_DB"],
+  KIWII_EXPERIMENTAL_DISABLE_COPY_ON_SELECT:
+    copy === undefined ? process.platform === "win32" : truthy("KIWII_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"),
+  KIWII_MODELS_URL: process.env["KIWII_MODELS_URL"],
+  KIWII_MODELS_PATH: process.env["KIWII_MODELS_PATH"],
+  KIWII_DB: process.env["KIWII_DB"],
 
-  OPENCODE_WORKSPACE_ID: process.env["OPENCODE_WORKSPACE_ID"],
-  OPENCODE_EXPERIMENTAL_WORKSPACES: enabledByExperimental("OPENCODE_EXPERIMENTAL_WORKSPACES"),
+  KIWII_WORKSPACE_ID: process.env["KIWII_WORKSPACE_ID"],
+  KIWII_EXPERIMENTAL_WORKSPACES: enabledByExperimental("KIWII_EXPERIMENTAL_WORKSPACES"),
 
   // Evaluated at access time (not module load) because tests, the CLI, and
   // external tooling set these env vars at runtime.
-  get OPENCODE_DISABLE_PROJECT_CONFIG() {
-    return truthy("OPENCODE_DISABLE_PROJECT_CONFIG")
+  get KIWII_DISABLE_PROJECT_CONFIG() {
+    return truthy("KIWII_DISABLE_PROJECT_CONFIG")
   },
-  get OPENCODE_EXPERIMENTAL_REFERENCES() {
-    return enabledByExperimental("OPENCODE_EXPERIMENTAL_REFERENCES")
+  get KIWII_EXPERIMENTAL_REFERENCES() {
+    return enabledByExperimental("KIWII_EXPERIMENTAL_REFERENCES")
   },
-  get OPENCODE_TUI_CONFIG() {
-    return process.env["OPENCODE_TUI_CONFIG"]
+  get KIWII_TUI_CONFIG() {
+    return process.env["KIWII_TUI_CONFIG"]
   },
-  get OPENCODE_CONFIG_DIR() {
-    return process.env["OPENCODE_CONFIG_DIR"]
+  get KIWII_CONFIG_DIR() {
+    return process.env["KIWII_CONFIG_DIR"]
   },
-  get OPENCODE_PURE() {
-    return truthy("OPENCODE_PURE")
+  get KIWII_PURE() {
+    return truthy("KIWII_PURE")
   },
-  get OPENCODE_PERMISSION() {
-    return process.env["OPENCODE_PERMISSION"]
+  get KIWII_PERMISSION() {
+    return process.env["KIWII_PERMISSION"]
   },
-  get OPENCODE_PLUGIN_META_FILE() {
-    return process.env["OPENCODE_PLUGIN_META_FILE"]
+  get KIWII_PLUGIN_META_FILE() {
+    return process.env["KIWII_PLUGIN_META_FILE"]
   },
-  get OPENCODE_CLIENT() {
-    return process.env["OPENCODE_CLIENT"] ?? "cli"
+  get KIWII_CLIENT() {
+    return process.env["KIWII_CLIENT"] ?? "cli"
   },
 }

@@ -1,9 +1,9 @@
 import fs from "fs/promises"
 import os from "os"
 import { Effect } from "effect"
-import { AppNodeBuilder } from "@opencode-ai/core/effect/app-node-builder"
-import { EffectFlock } from "@opencode-ai/core/util/effect-flock"
-import { Global } from "@opencode-ai/core/global"
+import { AppNodeBuilder } from "@kiwii/core/effect/app-node-builder"
+import { EffectFlock } from "@kiwii/core/util/effect-flock"
+import { Global } from "@kiwii/core/global"
 
 type Msg = {
   key: string

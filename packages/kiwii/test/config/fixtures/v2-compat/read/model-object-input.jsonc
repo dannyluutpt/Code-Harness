@@ -1,0 +1,4 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json",
+  "model": { "providerID": "anthropic", "model": "claude-sonnet", "variant": "fast" },
+}
