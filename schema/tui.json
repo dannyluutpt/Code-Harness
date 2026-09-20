@@ -14069,6 +14069,204 @@
           ],
           "description": "Toggle model favorite status"
         },
+        "model_refresh": {
+          "anyOf": [
+            {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "ctrl": {
+                      "type": "boolean"
+                    },
+                    "shift": {
+                      "type": "boolean"
+                    },
+                    "meta": {
+                      "type": "boolean"
+                    },
+                    "super": {
+                      "type": "boolean"
+                    },
+                    "hyper": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "ctrl": {
+                              "type": "boolean"
+                            },
+                            "shift": {
+                              "type": "boolean"
+                            },
+                            "meta": {
+                              "type": "boolean"
+                            },
+                            "super": {
+                              "type": "boolean"
+                            },
+                            "hyper": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "event": {
+                      "type": "string",
+                      "enum": [
+                        "press",
+                        "release"
+                      ]
+                    },
+                    "preventDefault": {
+                      "type": "boolean"
+                    },
+                    "fallthrough": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "key"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "ctrl": {
+                        "type": "boolean"
+                      },
+                      "shift": {
+                        "type": "boolean"
+                      },
+                      "meta": {
+                        "type": "boolean"
+                      },
+                      "super": {
+                        "type": "boolean"
+                      },
+                      "hyper": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "ctrl": {
+                                "type": "boolean"
+                              },
+                              "shift": {
+                                "type": "boolean"
+                              },
+                              "meta": {
+                                "type": "boolean"
+                              },
+                              "super": {
+                                "type": "boolean"
+                              },
+                              "hyper": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "name"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "event": {
+                        "type": "string",
+                        "enum": [
+                          "press",
+                          "release"
+                        ]
+                      },
+                      "preventDefault": {
+                        "type": "boolean"
+                      },
+                      "fallthrough": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "key"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "description": "Re-detect local models (Ollama, llama.cpp) from model dialog"
+        },
         "model_list": {
           "anyOf": [
             {
@@ -16641,7 +16839,7 @@
               }
             }
           ],
-          "description": "Cycle model variants"
+          "description": "Cycle effort"
         },
         "variant_list": {
           "anyOf": [
@@ -16839,7 +17037,7 @@
               }
             }
           ],
-          "description": "List model variants"
+          "description": "List effort levels"
         },
         "messages_page_up": {
           "anyOf": [
@@ -32878,6 +33076,204 @@
             }
           ],
           "description": "Complete autocomplete item"
+        },
+        "prompt.autocomplete.accept": {
+          "anyOf": [
+            {
+              "type": "boolean",
+              "enum": [
+                false
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "ctrl": {
+                      "type": "boolean"
+                    },
+                    "shift": {
+                      "type": "boolean"
+                    },
+                    "meta": {
+                      "type": "boolean"
+                    },
+                    "super": {
+                      "type": "boolean"
+                    },
+                    "hyper": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "ctrl": {
+                              "type": "boolean"
+                            },
+                            "shift": {
+                              "type": "boolean"
+                            },
+                            "meta": {
+                              "type": "boolean"
+                            },
+                            "super": {
+                              "type": "boolean"
+                            },
+                            "hyper": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "event": {
+                      "type": "string",
+                      "enum": [
+                        "press",
+                        "release"
+                      ]
+                    },
+                    "preventDefault": {
+                      "type": "boolean"
+                    },
+                    "fallthrough": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "key"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "ctrl": {
+                        "type": "boolean"
+                      },
+                      "shift": {
+                        "type": "boolean"
+                      },
+                      "meta": {
+                        "type": "boolean"
+                      },
+                      "super": {
+                        "type": "boolean"
+                      },
+                      "hyper": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "ctrl": {
+                                "type": "boolean"
+                              },
+                              "shift": {
+                                "type": "boolean"
+                              },
+                              "meta": {
+                                "type": "boolean"
+                              },
+                              "super": {
+                                "type": "boolean"
+                              },
+                              "hyper": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "name"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "event": {
+                        "type": "string",
+                        "enum": [
+                          "press",
+                          "release"
+                        ]
+                      },
+                      "preventDefault": {
+                        "type": "boolean"
+                      },
+                      "fallthrough": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "key"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "description": "Complete autocomplete item when the cursor is at the end"
         },
         "permission.prompt.fullscreen": {
           "anyOf": [

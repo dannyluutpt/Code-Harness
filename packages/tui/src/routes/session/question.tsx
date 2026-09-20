@@ -5,7 +5,6 @@ import type { TextareaRenderable } from "@opentui/core"
 import { selectedForeground, tint, useTheme } from "../../context/theme"
 import type { QuestionAnswer, QuestionRequest } from "@kiwii/sdk/v2"
 import { useSDK } from "../../context/sdk"
-import { SplitBorder } from "../../ui/border"
 import { useTuiConfig } from "../../config"
 import { useBindings, useKiwiiModeStack } from "../../keymap"
 
@@ -288,11 +287,13 @@ export function QuestionPrompt(props: { request: QuestionRequest; directory?: st
   return (
     <box
       backgroundColor={theme.backgroundPanel}
-      border={["left"]}
+      border
+      borderStyle="rounded"
       borderColor={theme.accent}
-      customBorderChars={SplitBorder.customBorderChars}
+      title=" ? Question "
+      titleColor={theme.accent}
     >
-      <box gap={1} paddingLeft={1} paddingRight={3} paddingTop={1} paddingBottom={1}>
+      <box gap={1} paddingLeft={1} paddingRight={3} paddingBottom={1}>
         <Show when={!single()}>
           <box flexDirection="row" gap={1} paddingLeft={1}>
             <For each={questions()}>

@@ -2,6 +2,7 @@ import type { TuiPlugin, TuiPluginApi } from "@kiwii/plugin/tui"
 import type { BuiltinTuiPlugin } from "../builtins"
 import { createMemo, For, Show, createSignal } from "solid-js"
 import { Locale } from "../../util/locale"
+import { SIDEBAR_WIDTH } from "../../util/layout"
 
 const id = "internal:sidebar-files"
 
@@ -9,6 +10,13 @@ function changeCountWidth(item: { additions: number; deletions: number }) {
   return [item.additions ? `+${item.additions}` : "", item.deletions ? `-${item.deletions}` : ""]
     .filter(Boolean)
     .join(" ").length
+}
+
+// Left-truncate at a path separator so the filename survives: "…/prompt/index.tsx".
+function fitPath(file: string, width: number) {
+  const cut = Locale.truncateLeft(file, width)
+  if (cut === file || cut.indexOf("/", 1) === -1) return cut
+  return "…" + cut.slice(cut.indexOf("/", 1))
 }
 
 function View(props: { api: TuiPluginApi; session_id: string }) {
@@ -21,18 +29,19 @@ function View(props: { api: TuiPluginApi; session_id: string }) {
       <box>
         <box flexDirection="row" gap={1} onMouseDown={() => list().length > 2 && setOpen((x) => !x)}>
           <Show when={list().length > 2}>
-            <text fg={theme().text}>{open() ? "▼" : "▶"}</text>
+            <text fg={theme().secondary}>{open() ? "▼" : "▶"}</text>
           </Show>
-          <text fg={theme().text}>
-            <b>Modified Files</b>
+          <text fg={theme().secondary}>
+            <b>modified files</b>
           </text>
         </box>
         <Show when={list().length <= 2 || open()}>
           <For each={list()}>
             {(item) => (
               <box flexDirection="row" gap={1} justifyContent="space-between">
+                {/* 6 = sidebar padding (4) + scrollbox gutter (1) + gap before the counts (1) */}
                 <text fg={theme().textMuted} wrapMode="none">
-                  {Locale.truncateLeft(item.file, Math.max(2, 36 - changeCountWidth(item)))}
+                  {fitPath(item.file, Math.max(2, SIDEBAR_WIDTH - 6 - changeCountWidth(item)))}
                 </text>
                 <box flexDirection="row" gap={1} flexShrink={0}>
                   <Show when={item.additions}>

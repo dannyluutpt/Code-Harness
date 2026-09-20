@@ -1,7 +1,6 @@
 import type { TuiPlugin, TuiPluginModule } from "@kiwii/plugin/tui"
 import HomeFooter from "./home/footer"
 import HomeTips from "./home/tips"
-import SidebarContext from "./sidebar/context"
 import SidebarFiles from "./sidebar/files"
 import SidebarFooter from "./sidebar/footer"
 import SidebarLsp from "./sidebar/lsp"
@@ -22,7 +21,6 @@ export function createBuiltinPlugins(options: { experimentalEventSystem: boolean
   return [
     HomeFooter,
     HomeTips,
-    SidebarContext,
     SidebarMcp,
     SidebarLsp,
     SidebarTodo,

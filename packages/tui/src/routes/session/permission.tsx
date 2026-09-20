@@ -6,7 +6,6 @@ import type { TextareaRenderable } from "@opentui/core"
 import { useTheme, selectedForeground } from "../../context/theme"
 import type { PermissionRequest } from "@kiwii/sdk/v2"
 import { useSDK } from "../../context/sdk"
-import { SplitBorder } from "../../ui/border"
 import { useSync } from "../../context/sync"
 import { useProject } from "../../context/project"
 import { filetype } from "../../util/filetype"
@@ -383,17 +382,11 @@ export function PermissionPrompt(props: { request: PermissionRequest; directory?
           const current = info()
 
           const header = () => (
-            <box flexDirection="column" gap={0}>
-              <box flexDirection="row" gap={1} flexShrink={0}>
-                <text fg={theme.warning}>{"△"}</text>
-                <text fg={theme.text}>Permission required</text>
-              </box>
-              <box flexDirection="row" gap={1} paddingLeft={2} flexShrink={0}>
-                <text fg={theme.textMuted} flexShrink={0}>
-                  {current.icon}
-                </text>
-                <text fg={theme.text}>{current.title}</text>
-              </box>
+            <box flexDirection="row" gap={1} flexShrink={0}>
+              <text fg={theme.textMuted} flexShrink={0}>
+                {current.icon}
+              </text>
+              <text fg={theme.text}>{current.title}</text>
             </box>
           )
 
@@ -473,15 +466,13 @@ function RejectPrompt(props: { onConfirm: (message: string) => void; onCancel: (
   return (
     <box
       backgroundColor={theme.backgroundPanel}
-      border={["left"]}
+      border
+      borderStyle="rounded"
       borderColor={theme.error}
-      customBorderChars={SplitBorder.customBorderChars}
+      title=" △ Reject permission "
+      titleColor={theme.error}
     >
-      <box gap={1} paddingLeft={1} paddingRight={3} paddingTop={1} paddingBottom={1}>
-        <box flexDirection="row" gap={1} paddingLeft={1}>
-          <text fg={theme.error}>{"△"}</text>
-          <text fg={theme.text}>Reject permission</text>
-        </box>
+      <box gap={1} paddingLeft={1} paddingRight={3} paddingBottom={1}>
         <box paddingLeft={1}>
           <text fg={theme.textMuted}>Tell Kiwii what to do differently</text>
         </box>
@@ -632,9 +623,11 @@ function Prompt<const T extends Record<string, string>>(props: {
   const content = () => (
     <box
       backgroundColor={theme.backgroundPanel}
-      border={["left"]}
+      border
+      borderStyle="rounded"
       borderColor={theme.warning}
-      customBorderChars={SplitBorder.customBorderChars}
+      title={` △ ${props.title} `}
+      titleColor={theme.warning}
       {...(store.expanded
         ? { top: dimensions().height * -1 + 1, bottom: 1, left: 2, right: 2, position: "absolute" }
         : {
@@ -646,16 +639,8 @@ function Prompt<const T extends Record<string, string>>(props: {
             position: "relative",
           })}
     >
-      <box gap={1} paddingLeft={1} paddingRight={3} paddingTop={1} paddingBottom={1} flexGrow={1}>
-        <Show
-          when={props.header}
-          fallback={
-            <box flexDirection="row" gap={1} paddingLeft={1} flexShrink={0}>
-              <text fg={theme.warning}>{"△"}</text>
-              <text fg={theme.text}>{props.title}</text>
-            </box>
-          }
-        >
+      <box gap={1} paddingLeft={1} paddingRight={3} paddingBottom={1} flexGrow={1}>
+        <Show when={props.header}>
           <box paddingLeft={1} flexShrink={0}>
             {props.header}
           </box>
