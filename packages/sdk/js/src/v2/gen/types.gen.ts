@@ -2043,6 +2043,10 @@ export type Config = {
   permission_mode?: PermissionMode
   permissions?: PermissionsClaudeConfig
   hooks?: HooksConfig
+  websearch?: {
+    provider?: "exa" | "parallel" | "tavily" | "brave"
+    api_key?: string
+  }
   memory?: {
     auto?: boolean
     /**

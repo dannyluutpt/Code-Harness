@@ -4,6 +4,7 @@ import { HttpClient, HttpClientRequest } from "effect/unstable/http"
 export const EXA_URL = process.env.EXA_API_KEY
   ? `https://mcp.exa.ai/mcp?exaApiKey=${encodeURIComponent(process.env.EXA_API_KEY)}`
   : "https://mcp.exa.ai/mcp"
+export const exaUrl = (key?: string) => (key ? `https://mcp.exa.ai/mcp?exaApiKey=${encodeURIComponent(key)}` : "https://mcp.exa.ai/mcp")
 export const PARALLEL_URL = "https://search.parallel.ai/mcp"
 
 const McpResult = Schema.Struct({

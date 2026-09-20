@@ -6,6 +6,8 @@ import { Config } from "@/config/config"
 import { mapValues, mergeDeep, omit, pickBy, sortBy } from "remeda"
 import { NoSuchModelError, type Provider as SDK } from "ai"
 import { Npm } from "@kiwii/core/npm"
+import { Flag } from "@kiwii/core/flag/flag"
+import { ConfigProviderV1 } from "@kiwii/core/v1/config/provider"
 import { Hash } from "@kiwii/core/util/hash"
 import { Plugin } from "../plugin"
 import { serviceUse } from "@kiwii/core/effect/service-use"
@@ -1441,7 +1443,8 @@ const layer = Layer.effect(
         const plugins = yield* plugin.list()
 
         // now read config providers - includes any modifications from plugin config() hook
-        const configProviders = Object.entries(cfg.provider ?? {})
+        const ollama = yield* detectOllama(cfg.provider, cfg.disabled_providers)
+        const configProviders = Object.entries({ ...(ollama ? { ollama } : {}), ...(cfg.provider ?? {}) })
         const disabled = new Set(cfg.disabled_providers ?? [])
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
 
@@ -2070,3 +2073,37 @@ export const node = LayerNode.make({
 })
 
 export * as Provider from "./provider"
+
+
+const OLLAMA_DEFAULT_HOST = "http://localhost:11434"
+
+/**
+ * Auto-register a local Ollama server as the `ollama` provider when it is running and not configured
+ * explicitly. Honours OLLAMA_HOST; disable with KIWII_DISABLE_OLLAMA or disabled_providers.
+ */
+export const detectOllama = Effect.fn("Provider.detectOllama")(function* (
+  configured: Record<string, unknown> | undefined,
+  disabled: ReadonlyArray<string> | undefined,
+) {
+  if (Flag.KIWII_DISABLE_OLLAMA) return
+  if (configured?.["ollama"]) return
+  if (disabled?.includes("ollama")) return
+  const host = (process.env["OLLAMA_HOST"] ?? OLLAMA_DEFAULT_HOST).replace(/\/+$/, "")
+  const base = host.startsWith("http") ? host : `http://${host}`
+  const tags = yield* Effect.promise(() =>
+    fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(800) })
+      .then((res) => (res.ok ? (res.json() as Promise<{ models?: { name: string }[] }>) : undefined))
+      .catch(() => undefined),
+  )
+  const models = tags?.models ?? []
+  if (models.length === 0) return
+  const info: ConfigProviderV1.Info = {
+    name: "Ollama (local)",
+    npm: "@ai-sdk/openai-compatible",
+    options: { baseURL: `${base}/v1` },
+    models: Object.fromEntries(
+      models.map((model) => [model.name, { name: model.name, tool_call: true, temperature: true }]),
+    ),
+  }
+  return info
+})

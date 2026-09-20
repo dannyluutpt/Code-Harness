@@ -1,0 +1,16 @@
+Open a pull request for the current branch in `${path}`.
+
+User-provided focus or constraints (honor these):
+$ARGUMENTS
+
+Steps:
+1. Check `git status --short`, the current branch (`git branch --show-current`) and the default branch (`git symbolic-ref refs/remotes/origin/HEAD` or `main`). If there are uncommitted changes, commit them first following the repository's commit conventions.
+2. Review everything the PR will contain: `git log <default>..HEAD --oneline` and `git diff <default>...HEAD --stat`.
+3. Push the branch with `git push -u origin <branch>` (retry once on network errors).
+4. If `.github/pull_request_template.md` (or `PULL_REQUEST_TEMPLATE.md`) exists, follow its section structure.
+5. Create the PR:
+   - If the `gh` CLI is available and authenticated, run `gh pr create --title "<title>" --body "<body>"` (add `--draft` if the user asked for a draft). Title under 72 characters; body with a short summary, a bullet list of notable changes, and how it was tested.
+   - Otherwise, print the compare URL (`https://github.com/<owner>/<repo>/compare/<default>...<branch>?expand=1`) together with the suggested title and body so the user can open it manually.
+6. Report the PR URL (or the compare URL) to the user.
+
+Never force-push, never push to the default branch, and never merge the PR.

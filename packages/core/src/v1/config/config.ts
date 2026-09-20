@@ -134,6 +134,16 @@ export const Info = Schema.Struct({
     description: "Claude Code compatible allow/ask/deny lists, merged into `permission` after it",
   }),
   hooks: Schema.optional(ConfigHooksV1.Info),
+  websearch: Schema.optional(
+    Schema.Struct({
+      provider: Schema.optional(Schema.Literals(["exa", "parallel", "tavily", "brave"])).annotate({
+        description: "Web search backend. Defaults to the first provider with an API key, else Exa (no key needed).",
+      }),
+      api_key: Schema.optional(Schema.String).annotate({
+        description: "API key for the selected provider (EXA_API_KEY, PARALLEL_API_KEY, TAVILY_API_KEY or BRAVE_API_KEY also work)",
+      }),
+    }),
+  ).annotate({ description: "Web search tool configuration" }),
   memory: Schema.optional(
     Schema.Struct({
       auto: Schema.optional(Schema.Boolean).annotate({

@@ -1,0 +1,14 @@
+Create a git commit for the current changes in `${path}`.
+
+User-provided focus or constraints (honor these):
+$ARGUMENTS
+
+Steps:
+1. Run `git status --short` and `git diff` (plus `git diff --cached`) to understand what changed. Never commit files that look like secrets (.env, credentials, keys) and warn the user if you see them.
+2. Look at `git log --oneline -n 10` to match the repository's commit message style (conventional commits such as `feat(scope): summary` when the history uses them).
+3. Stage the relevant files explicitly with `git add <paths>`; only use `git add -A` when the user asked to commit everything. Do not stage build artifacts or unrelated changes.
+4. Write a concise commit message: a one-line summary under 72 characters describing what changed and why, followed by an optional short body. Do not mention tools, AI, or the process.
+5. Commit with `git commit -m "<message>"` (use a heredoc or `-m` twice for a body). If a pre-commit hook fails, fix the reported problem and commit again; never use `--no-verify`.
+6. Show the final `git log -1 --stat` output to the user.
+
+If there are no changes, say so and stop. Never amend, rebase, or push unless the user explicitly asks.

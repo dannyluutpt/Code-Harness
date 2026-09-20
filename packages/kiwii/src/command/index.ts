@@ -9,6 +9,8 @@ import { MCP } from "../mcp"
 import { Skill } from "../skill"
 import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
+import PROMPT_COMMIT from "./template/commit.txt"
+import PROMPT_PR from "./template/pr.txt"
 import { LegacyEvent } from "@kiwii/schema/legacy-event"
 
 type State = {
@@ -46,6 +48,8 @@ export function hints(template: string) {
 export const Default = {
   INIT: "init",
   REVIEW: "review",
+  COMMIT: "commit",
+  PR: "pr",
 } as const
 
 export interface Interface {
@@ -69,7 +73,7 @@ const layer = Layer.effect(
 
       commands[Default.INIT] = {
         name: Default.INIT,
-        description: "guided AGENTS.md setup",
+        description: "guided KIWII.md setup",
         source: "command",
         get template() {
           return PROMPT_INITIALIZE.replace("${path}", ctx.worktree)
@@ -85,6 +89,24 @@ const layer = Layer.effect(
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),
+      }
+      commands[Default.COMMIT] = {
+        name: Default.COMMIT,
+        description: "stage and commit the current changes with a conventional message",
+        source: "command",
+        get template() {
+          return PROMPT_COMMIT.replace("${path}", ctx.worktree)
+        },
+        hints: hints(PROMPT_COMMIT),
+      }
+      commands[Default.PR] = {
+        name: Default.PR,
+        description: "push the branch and open a pull request (gh or compare URL)",
+        source: "command",
+        get template() {
+          return PROMPT_PR.replace("${path}", ctx.worktree)
+        },
+        hints: hints(PROMPT_PR),
       }
 
       for (const [name, command] of Object.entries(cfg.command ?? {})) {

@@ -58,13 +58,11 @@ import { MCP } from "@/mcp"
 import { PermissionV1 } from "@kiwii/core/v1/permission"
 import { McpCatalog } from "@/mcp/catalog"
 
+/** Web search is always available (Exa needs no key); KIWII_DISABLE_WEBSEARCH turns it off. */
 export function webSearchEnabled(providerID: ProviderV2.ID, flags = { exa: false, parallel: false }) {
-  return (
-    providerID === ProviderV2.ID.kiwii ||
-    providerID === ProviderV2.ID.make("kiwii-go") ||
-    flags.exa ||
-    flags.parallel
-  )
+  void providerID
+  void flags
+  return !Flag.KIWII_DISABLE_WEBSEARCH
 }
 
 type TaskDef = Tool.InferDef<typeof TaskTool>
