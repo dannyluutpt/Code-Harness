@@ -592,8 +592,8 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         title: "Switch session",
         category: "Session",
         suggested: sync.data.session.length > 0,
-        slashName: "sessions",
-        slashAliases: ["resume", "continue"],
+        slashName: "resume",
+        slashAliases: ["sessions", "continue"],
         run: () => {
           dialog.replace(() => <DialogSessionList />)
         },
@@ -603,8 +603,8 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         title: "New session",
         suggested: route.data.type === "session",
         category: "Session",
-        slashName: "new",
-        slashAliases: ["clear"],
+        slashName: "clear",
+        slashAliases: ["new"],
         run: () => {
           route.navigate({
             type: "home",
@@ -651,9 +651,9 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         title: "Switch model",
         suggested: true,
         category: "Agent",
-        slashName: "models",
-        // Bias /mo toward /models over /move without changing global fuzzy scoring. /model mirrors Claude Code.
-        slashAliases: ["mo", "model"],
+        slashName: "model",
+        // Bias /mo toward /model over /move without changing global fuzzy scoring. Claude Code names come first.
+        slashAliases: ["models", "mo"],
         run: () => {
           dialog.replace(() => <DialogModel />)
         },
@@ -707,8 +707,8 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         name: "mcp.list",
         title: "Toggle MCPs",
         category: "Agent",
-        slashName: "mcps",
-        slashAliases: ["mcp"],
+        slashName: "mcp",
+        slashAliases: ["mcps"],
         run: () => {
           dialog.replace(() => <DialogMcp />)
         },
@@ -760,8 +760,8 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         name: "provider.connect",
         title: "Connect provider",
         suggested: !connected(),
-        slashName: "connect",
-        slashAliases: ["login", "providers"],
+        slashName: "login",
+        slashAliases: ["connect", "providers"],
         run: () => {
           dialog.replace(() => <DialogProviderList />)
         },
@@ -804,7 +804,8 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       {
         name: "theme.switch",
         title: "Switch theme",
-        slashName: "themes",
+        slashName: "theme",
+        slashAliases: ["themes"],
         run: () => {
           dialog.replace(() => <DialogThemeList />)
         },
@@ -1137,9 +1138,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
         evt.stopPropagation()
       }}
       onMouseUp={
-        !Flag.KIWII_EXPERIMENTAL_DISABLE_COPY_ON_SELECT
-          ? () => Selection.copy(renderer, toast, clipboard)
-          : undefined
+        !Flag.KIWII_EXPERIMENTAL_DISABLE_COPY_ON_SELECT ? () => Selection.copy(renderer, toast, clipboard) : undefined
       }
     >
       <Show when={Flag.KIWII_SHOW_TTFD}>

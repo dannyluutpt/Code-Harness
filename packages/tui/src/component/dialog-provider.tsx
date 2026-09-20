@@ -272,7 +272,7 @@ function AutoMethod(props: AutoMethodProps) {
         variant: "error",
         message:
           "name" in result.error && result.error.name === "ProviderAuthOauthCallbackFailed"
-            ? "OAuth authorization failed. Try /connect again."
+            ? "OAuth authorization failed. Try /login again."
             : JSON.stringify(result.error),
       })
       dialog.clear()
