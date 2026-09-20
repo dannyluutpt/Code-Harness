@@ -38,6 +38,16 @@ describe("hooks plugin", () => {
     ).rejects.toBeInstanceOf(HookBlockedError)
   })
 
+  test("matchers are case-insensitive like Claude Code's", async () => {
+    const plugin = await createHooksPlugin(fakeInput(process.cwd()), runCommand(process.cwd(), {}))
+    await plugin.config!({
+      hooks: { PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "exit 2" }] }] },
+    } as never)
+    await expect(
+      plugin["tool.execute.before"]!({ tool: "bash", sessionID: "s", callID: "c" }, { args: {} }),
+    ).rejects.toBeInstanceOf(HookBlockedError)
+  })
+
   test("JSON stdout can update input and add context", async () => {
     const plugin = await createHooksPlugin(fakeInput(process.cwd()), runCommand(process.cwd(), {}))
     await plugin.config!({

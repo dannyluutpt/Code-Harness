@@ -459,8 +459,8 @@ const layer = Layer.effect(
         // Claude Code compatibility: `.claude/commands` and `.claude/agents` (project and ~/.claude) are
         // loaded first so Kiwii's own directories override them.
         for (const dir of [path.join(Global.Path.home, ".claude"), ...claudeDirs.toReversed()]) {
-          result.command = mergeDeep(yield* Effect.promise(() => ConfigCommand.load(dir)), result.command ?? {})
-          result.agent = mergeDeep(yield* Effect.promise(() => ConfigAgent.load(dir)), result.agent ?? {})
+          result.command = mergeDeep(yield* Effect.promise(() => ConfigCommand.loadClaude(dir)), result.command ?? {})
+          result.agent = mergeDeep(yield* Effect.promise(() => ConfigAgent.loadClaude(dir)), result.agent ?? {})
         }
 
         const directories = yield* ConfigPaths.directories(ctx.directory, ctx.worktree)

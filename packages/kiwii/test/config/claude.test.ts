@@ -48,3 +48,19 @@ describe("normalizeArgv", () => {
     expect(normalizeArgv([])).toEqual([])
   })
 })
+
+describe("ConfigAgent.fromClaude", () => {
+  test("maps tools to an allow-list and drops short model aliases", async () => {
+    const { ConfigAgent } = await import("../../src/config/agent")
+    const config = ConfigAgent.fromClaude("reviewer", { description: "Sec", tools: "Read, Grep", model: "sonnet" }, "You review.")
+    expect(config).toEqual({
+      name: "reviewer",
+      mode: "subagent",
+      description: "Sec",
+      permission: { "*": "deny", read: "allow", grep: "allow" },
+      prompt: "You review.",
+    })
+    const full = ConfigAgent.fromClaude("x", { model: "anthropic/claude-opus-5", disallowedTools: ["Bash"] }, "p")
+    expect(full).toMatchObject({ model: "anthropic/claude-opus-5", permission: { bash: "deny" } })
+  })
+})
