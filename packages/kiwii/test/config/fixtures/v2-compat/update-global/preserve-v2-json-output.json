@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json",
+  "username": "after",
+  "mcp": {
+    "servers": {
+      "modern": {
+        "type": "local",
+        "command": ["modern-mcp"],
+        "disabled": true
+      }
+    }
+  },
+  "providers": {
+    "example": {
+      "settings": {
+        "apiKey": "fixture-secret"
+      }
+    }
+  }
+}

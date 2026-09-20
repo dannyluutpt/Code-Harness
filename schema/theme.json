@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kiwii theme",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "defs": {
+      "type": "object",
+      "description": "Named colors (hex) referenced from theme",
+      "additionalProperties": { "type": "string" }
+    },
+    "theme": {
+      "type": "object",
+      "description": "Theme tokens: a color, a defs name, or { dark, light }",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "object", "properties": { "dark": { "type": "string" }, "light": { "type": "string" } }, "additionalProperties": false }
+        ]
+      }
+    }
+  },
+  "required": ["theme"],
+  "allowComments": true,
+  "allowTrailingCommas": true
+}

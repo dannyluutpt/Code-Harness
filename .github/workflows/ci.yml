@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - name: core
+        run: bun test --only-failures
+        working-directory: packages/core
+      # The kiwii suite spawns `bun src/index.ts run ...` subprocesses concurrently; warm the
+      # runtime transpiler cache once so cold starts on small runners stay within the harness timeouts.
+      - name: warm kiwii transpiler cache
+        run: bun src/index.ts --version && bun src/index.ts run --help > /dev/null
+        working-directory: packages/kiwii
+        env:
+          KIWII_DISABLE_AUTOUPDATE: "1"
+          KIWII_DISABLE_MODELS_FETCH: "1"
+      # Concurrent subprocess tests each boot the CLI; cap concurrency so small runners stay within timeouts.
+      - name: kiwii
+        run: bun test --timeout 30000 --only-failures --max-concurrency 3
+        working-directory: packages/kiwii
+        env:
+          CI: "true"
+      - name: tui
+        run: bun test --timeout 30000 --only-failures
+        working-directory: packages/tui
+      - name: ui
+        run: bun test src --only-failures
+        working-directory: packages/ui
+      - name: session-ui
+        run: bun test src --only-failures
+        working-directory: packages/session-ui

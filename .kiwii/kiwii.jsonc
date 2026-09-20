@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json",
+  // Dogfood config for working on Kiwii itself.
+  "permission_mode": "default",
+  "permissions": {
+    "allow": ["Bash(bun *)", "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)"],
+    "deny": ["Read(.env)", "Read(**/.env)"]
+  },
+  "references": {
+    "effect": {
+      "repository": "github.com/Effect-TS/effect-smol",
+      "description": "Use for Effect v4 and effect-smol implementation details",
+    },
+  },
+}

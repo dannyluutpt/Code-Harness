@@ -1,0 +1,36 @@
+# Quyền hạn / Permissions
+
+## Tiếng Việt
+
+### Permission mode (giống Claude Code)
+
+| Mode | Hành vi |
+|---|---|
+| `default` | Hỏi theo ruleset; mặc định mọi tool được phép trừ đọc `.env*`, thư mục ngoài dự án, và các quy tắc bạn đặt |
+| `acceptEdits` | Tự duyệt đọc/ghi/sửa file, glob/grep; vẫn hỏi cho bash, webfetch, v.v. |
+| `plan` | Chỉ đọc: chuyển sang agent `plan` (không sửa file trừ `.kiwii/plans/*.md`), dùng `plan_exit` khi xong |
+| `bypassPermissions` | Duyệt tất cả những gì không bị `deny` (nguy hiểm) |
+
+Đặt mode: cờ `--permission-mode acceptEdits`, biến `KIWII_PERMISSION_MODE`, khoá `permission_mode` trong `kiwii.json`, phím `Shift+Tab` hoặc bảng lệnh trong TUI. `--auto`/`--yolo` tương đương `bypassPermissions`. Trong `kiwii run`, mode `default` tự từ chối yêu cầu quyền (không có ai để hỏi), nên dùng `acceptEdits` hoặc `bypassPermissions` cho CI.
+
+### Allow/deny list
+
+```jsonc
+"permissions": {
+  "allow": ["Bash(git *)", "Bash(bun test*)", "Edit(src/**)", "WebFetch(domain:docs.bun.sh)"],
+  "ask":   ["Bash(rm *)"],
+  "deny":  ["Read(.env)", "Bash(git push *)", "mcp__github__delete_repo"]
+}
+```
+
+Tên tool: `Bash`, `Edit`/`Write`, `Read`, `Glob`, `Grep`, `WebFetch`, `WebSearch`, `Task`, `Skill`, `mcp__server__tool`. Mẫu trong ngoặc là glob (`*`), `Bash(npm run:*)` cũng được hiểu. Các mục được chuyển thành ruleset gốc `permission` với `deny` đứng cuối nên `deny` luôn thắng, kể cả ở mode `bypassPermissions`.
+
+### Ruleset gốc
+
+`permission` là bản đồ `tool → action` hoặc `tool → { pattern: action }` với action `allow | ask | deny`; quy tắc khai báo sau thắng. Từng agent có thể ghi đè bằng `agent.<tên>.permission`.
+
+## English
+
+Modes: `default` (ask per rules), `acceptEdits` (auto-approve file reads/edits), `plan` (read-only via the built-in `plan` agent), `bypassPermissions` (approve everything not denied). Set with `--permission-mode`, `KIWII_PERMISSION_MODE`, `permission_mode` in config, or `Shift+Tab` in the TUI; `--auto`/`--yolo` mean `bypassPermissions`. Headless `kiwii run` auto-rejects prompts in `default`, so use `acceptEdits` or `bypassPermissions` in CI.
+
+`permissions.allow/ask/deny` accept Claude Code style entries (`Bash(git *)`, `Edit(src/**)`, `WebFetch(domain:x)`, `mcp__server__tool`); they are converted into the native `permission` ruleset with deny last, so deny always wins. The native `permission` map (`tool → action` or `tool → {pattern: action}`) is still available and can be overridden per agent.

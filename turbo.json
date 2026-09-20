@@ -1,0 +1,53 @@
+{
+  "$schema": "https://v2-8-13.turborepo.dev/schema.json",
+  "globalEnv": [
+    "CI",
+    "KIWII_DISABLE_SHARE"
+  ],
+  "globalPassThroughEnv": [
+    "CI",
+    "KIWII_DISABLE_SHARE"
+  ],
+  "tasks": {
+    "typecheck": {},
+    "build": {
+      "dependsOn": [],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "kiwii#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [],
+      "passThroughEnv": [
+        "*"
+      ]
+    },
+    "@kiwii/core#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@kiwii/app#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@kiwii/ui#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@kiwii/session-ui#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    }
+  }
+}
