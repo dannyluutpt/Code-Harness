@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="packages/ui/src/assets/favicon/favicon.svg" width="72" alt="Kiwii">
+  <img src="assets/logo.png" width="160" alt="Kiwii">
 </p>
 <h1 align="center">Kiwii</h1>
 <p align="center">Coding agent cho terminal và trình duyệt, chạy hoàn toàn trên máy của bạn.<br/>A local-first coding agent for your terminal and browser.</p>
