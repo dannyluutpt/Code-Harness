@@ -1,4 +1,4 @@
-Create or update `AGENTS.md` for this repository.
+Create or update `KIWII.md` for this repository (Kiwii also reads `AGENTS.md` and `CLAUDE.md`; if one already exists and `KIWII.md` does not, you may improve that file instead).
 
 The goal is a compact instruction file that helps future Kiwii sessions avoid mistakes and ramp up quickly. Every line should answer: "Would an agent likely miss this without help?" If not, leave it out.
 
@@ -30,7 +30,7 @@ Look for the highest-signal facts for an agent working in this repo:
 - testing quirks: fixtures, integration test prerequisites, snapshot workflows, required services, flaky or expensive suites
 - important constraints from existing instruction files worth preserving
 
-Good `AGENTS.md` content is usually hard-earned context that took reading multiple files to infer.
+Good `KIWII.md` content is usually hard-earned context that took reading multiple files to infer.
 
 ## Questions
 
@@ -63,4 +63,4 @@ When in doubt, omit.
 
 Prefer short sections and bullets. If the repo is simple, keep the file simple. If the repo is large, summarize the few structural facts that actually change how an agent should work.
 
-If `AGENTS.md` already exists at `${path}`, improve it in place rather than rewriting blindly. Preserve verified useful guidance, delete fluff or stale claims, and reconcile it with the current codebase.
+If `KIWII.md` already exists at `${path}`, improve it in place rather than rewriting blindly. Preserve verified useful guidance, delete fluff or stale claims, and reconcile it with the current codebase.

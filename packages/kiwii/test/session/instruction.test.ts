@@ -112,6 +112,32 @@ function loaded(filepath: string): SessionV1.WithParts[] {
 }
 
 describe("Instruction.resolve", () => {
+  it.live("prefers KIWII.md over AGENTS.md at the project root", () =>
+    withFiles({ "KIWII.md": "# Kiwii Instructions", "AGENTS.md": "# Agents", "src/file.ts": "const x = 1" }, (dir) =>
+      Effect.gen(function* () {
+        const svc = yield* Instruction.Service
+        const system = yield* svc.systemPaths()
+        expect(system.has(path.join(dir, "KIWII.md"))).toBe(true)
+        expect(system.has(path.join(dir, "AGENTS.md"))).toBe(false)
+      }),
+    ),
+  )
+
+  it.live("returns KIWII.md from a subdirectory", () =>
+    withFiles({ "subdir/KIWII.md": "# Subdir", "subdir/nested/file.ts": "const x = 1" }, (dir) =>
+      Effect.gen(function* () {
+        const svc = yield* Instruction.Service
+        const results = yield* svc.resolve(
+          [],
+          path.join(dir, "subdir", "nested", "file.ts"),
+          MessageID.make("msg_message-test-kiwii"),
+        )
+        expect(results.length).toBe(1)
+        expect(results[0].filepath).toBe(path.join(dir, "subdir", "KIWII.md"))
+      }),
+    ),
+  )
+
   it.live("returns empty when AGENTS.md is at project root (already in systemPaths)", () =>
     withFiles({ "AGENTS.md": "# Root Instructions", "src/file.ts": "const x = 1" }, (dir) =>
       Effect.gen(function* () {

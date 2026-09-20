@@ -1,0 +1,5 @@
+Save, search or list long-term memory for this project. Memory persists across sessions and is shown to you at the start of every session.
+
+Use `save` for durable facts worth remembering later: user preferences, exact commands, project conventions, gotchas, or anything the user asks you to remember. Keep each entry short (one line) and self-contained. Do not save secrets, transient task details or anything already in memory.
+
+Use `search` to look up earlier notes by keyword, and `list` to print the whole memory file.

@@ -134,6 +134,16 @@ export const Info = Schema.Struct({
     description: "Claude Code compatible allow/ask/deny lists, merged into `permission` after it",
   }),
   hooks: Schema.optional(ConfigHooksV1.Info),
+  memory: Schema.optional(
+    Schema.Struct({
+      auto: Schema.optional(Schema.Boolean).annotate({
+        description: "Automatically extract durable facts from sessions into MEMORY.md (default: true)",
+      }),
+      max_lines: Schema.optional(Schema.Number).annotate({
+        description: "Maximum number of MEMORY.md lines loaded into the system prompt (default: 200)",
+      }),
+    }),
+  ).annotate({ description: "Long-term memory saved per project under the kiwii data directory" }),
   tools: Schema.optional(Schema.Record(Schema.String, Schema.Boolean)),
   attachment: Schema.optional(ConfigAttachmentV1.Info).annotate({
     description: "Attachment processing configuration, including image size limits and resizing behavior",

@@ -6,6 +6,7 @@ import os from "os"
 import { SessionID, MessageID, PartID } from "./schema"
 import { MessageV2 } from "./message-v2"
 import { SessionRevert } from "./revert"
+import { Memory } from "./memory"
 import { Session } from "./session"
 import { Agent } from "../agent/agent"
 import { Provider } from "@/provider/provider"
@@ -136,6 +137,7 @@ const layer = Layer.effect(
     const revert = yield* SessionRevert.Service
     const summary = yield* SessionSummary.Service
     const sys = yield* SystemPrompt.Service
+    const memory = yield* Memory.Service
     const llm = yield* LLM.Service
     const events = yield* EventV2Bridge.Service
     const flags = yield* RuntimeFlags.Service
@@ -250,6 +252,59 @@ const layer = Layer.effect(
       yield* sessions
         .setTitle({ sessionID: input.session.id, title: t })
         .pipe(Effect.catchCause((cause) => Effect.logError("failed to generate title", { error: Cause.squash(cause) })))
+    })
+
+    // Automatic long-term memory: ask the small model for durable facts and append them to MEMORY.md.
+    const remember = Effect.fn("SessionPrompt.remember")(function* (input: {
+      sessionID: SessionID
+      history: SessionV1.WithParts[]
+      providerID: ProviderV2.ID
+      modelID: ModelV2.ID
+    }) {
+      const ag = yield* agents.get("memory")
+      if (!ag) return
+      const recent = input.history.slice(-10)
+      const lastUser = recent.findLast((m) => m.info.role === "user")
+      if (!lastUser || lastUser.info.role !== "user") return
+      const mdl = ag.model
+        ? yield* provider.getModel(ag.model.providerID, ag.model.modelID)
+        : ((yield* provider.getSmallModel(input.providerID)) ??
+          (yield* provider.getModel(input.providerID, input.modelID)))
+      const existing = yield* memory.entries()
+      const msgs = yield* MessageV2.toModelMessagesEffect(recent, mdl)
+      const text = yield* llm
+        .stream({
+          agent: ag,
+          user: lastUser.info,
+          system: [],
+          small: true,
+          tools: {},
+          model: mdl,
+          sessionID: input.sessionID,
+          retries: 1,
+          messages: [
+            ...msgs,
+            {
+              role: "user",
+              content: [
+                "Existing memory (do not repeat):",
+                ...(existing.length ? existing.map((entry) => `- ${entry}`) : ["(empty)"]),
+                "",
+                "List the durable facts from this conversation worth remembering for future sessions, or NONE.",
+              ].join("\n"),
+            },
+          ],
+        })
+        .pipe(
+          Stream.filter(LLMEvent.is.textDelta),
+          Stream.map((e) => e.text),
+          Stream.mkString,
+        )
+      const entries = Memory.parseExtracted(text)
+      if (entries.length === 0) return
+      const result = yield* memory.save(entries)
+      if (result.added.length > 0)
+        yield* Effect.logInfo("memory saved", { "session.id": input.sessionID, added: result.added.length })
     })
 
     const handleSubtask = Effect.fn("SessionPrompt.handleSubtask")(function* (input: {
@@ -1126,6 +1181,13 @@ const layer = Layer.effect(
               })
             }
             yield* Effect.logInfo("exiting loop", { "session.id": sessionID })
+            if (yield* memory.shouldExtract(sessionID, msgs.length))
+              yield* remember({
+                sessionID,
+                history: msgs,
+                providerID: lastUser.model.providerID,
+                modelID: lastUser.model.modelID,
+              }).pipe(Effect.ignore, Effect.forkIn(scope))
             break
           }
 
@@ -1254,16 +1316,18 @@ const layer = Layer.effect(
 
             yield* plugin.trigger("experimental.chat.messages.transform", {}, { messages: msgs })
 
-            const [skills, env, instructions, mcpInstructions, modelMsgs] = yield* Effect.all([
+            const [skills, env, instructions, mcpInstructions, memoryBlock, modelMsgs] = yield* Effect.all([
               sys.skills(agent),
               sys.environment(model),
               instruction.system().pipe(Effect.orDie),
               sys.mcp(agent, session.permission),
+              memory.system().pipe(Effect.orElseSucceed(() => undefined)),
               MessageV2.toModelMessagesEffect(msgs, model),
             ])
             const system = [
               ...env,
               ...instructions,
+              ...(memoryBlock ? [memoryBlock] : []),
               ...(mcpInstructions ? [mcpInstructions] : []),
               ...(skills ? [skills] : []),
             ]
@@ -1621,6 +1685,7 @@ export const node = LayerNode.make({
     SessionRevert.node,
     SessionSummary.node,
     SystemPrompt.node,
+    Memory.node,
     LLM.node,
     EventV2Bridge.node,
     RuntimeFlags.node,

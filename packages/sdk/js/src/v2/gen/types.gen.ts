@@ -2043,6 +2043,13 @@ export type Config = {
   permission_mode?: PermissionMode
   permissions?: PermissionsClaudeConfig
   hooks?: HooksConfig
+  memory?: {
+    auto?: boolean
+    /**
+     * Maximum number of MEMORY.md lines loaded into the system prompt (default: 200)
+     */
+    max_lines?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+  }
   tools?: {
     [key: string]: boolean
   }
