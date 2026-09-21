@@ -106,3 +106,22 @@ describe("shell", () => {
     })
   }
 })
+
+describe("shell utf8 preamble", () => {
+  test("wraps PowerShell and cmd commands on Windows only", () => {
+    const ps = Shell.utf8("pwsh", "Get-ChildItem")
+    const cmd = Shell.utf8("cmd", "dir")
+    if (process.platform !== "win32") {
+      expect(ps).toBe("Get-ChildItem")
+      expect(cmd).toBe("dir")
+      return
+    }
+    expect(ps.startsWith("try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;")).toBe(true)
+    expect(ps.endsWith("; Get-ChildItem")).toBe(true)
+    expect(cmd).toBe("chcp 65001>nul & dir")
+  })
+
+  test("leaves posix shells untouched", () => {
+    expect(Shell.utf8("/bin/bash", "ls")).toBe("ls")
+  })
+})
