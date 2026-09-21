@@ -98,26 +98,14 @@ export const SettingsGeneral: Component = () => {
   const accepting = createMemo(() => {
     const value = dir()
     if (!value) return false
-    if (!params.id) return permission.isAutoAcceptingDirectory(value)
-    return permission.isAutoAccepting(params.id, value)
+    return permission.mode(params.id, value) === "bypassPermissions"
   })
 
   const toggleAccept = (checked: boolean) => {
     const value = dir()
     if (!value) return
-
-    if (!params.id) {
-      if (permission.isAutoAcceptingDirectory(value) === checked) return
-      permission.toggleAutoAcceptDirectory(value)
-      return
-    }
-
-    if (checked) {
-      permission.enableAutoAccept(params.id, value)
-      return
-    }
-
-    permission.disableAutoAccept(params.id, value)
+    // The switch keeps its old meaning: approve every request, which is the bypass permissions mode.
+    permission.setMode(params.id, value, checked ? "bypassPermissions" : "default")
   }
   const desktop = createMemo(() => platform.platform === "desktop")
 
@@ -482,7 +470,9 @@ export const SettingsGeneral: Component = () => {
           description={
             <>
               {language.t("settings.general.row.theme.description")}{" "}
-              <ExternalLink href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/themes/">{language.t("common.learnMore")}</ExternalLink>
+              <ExternalLink href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/themes/">
+                {language.t("common.learnMore")}
+              </ExternalLink>
             </>
           }
         >

@@ -21,6 +21,8 @@ export type AtOption =
 
 export interface SlashCommand {
   id: string
+  /** Command to run when it differs from `id`, which stays unique per slash alias. */
+  command?: string
   trigger: string
   title: string
   description?: string

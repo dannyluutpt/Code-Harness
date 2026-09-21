@@ -194,7 +194,7 @@ export type PromptProjectController = ReturnType<typeof createPromptProjectContr
 
 export function PromptProjectSelector(props: {
   controller: PromptProjectController
-  placement?: "bottom" | "bottom-start"
+  placement?: "bottom" | "bottom-start" | "top" | "top-start"
 }) {
   const [triggerReady, setTriggerReady] = createSignal(false)
   let contentRef: HTMLDivElement | undefined

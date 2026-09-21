@@ -5,7 +5,6 @@ import { previewSelectedLines } from "@kiwii/session-ui/pierre/selection-bridge"
 import { useFile, selectionFromLines, type FileSelection, type SelectedLineRange } from "@/context/file"
 import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
-import { usePermission } from "@/context/permission"
 import { usePrompt } from "@/context/prompt"
 import { useSDK } from "@/context/sdk"
 import { useSettings } from "@/context/settings"
@@ -42,7 +41,6 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
   const dialog = useDialog()
   const file = useFile()
   const language = useLanguage()
-  const permission = usePermission()
   const prompt = usePrompt()
   const sdk = useSDK()
   const settings = useSettings()
@@ -139,14 +137,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
   const contextCommand = withCategory(language.t("command.category.context"))
   const viewCommand = withCategory(language.t("command.category.view"))
   const terminalCommand = withCategory(language.t("command.category.terminal"))
-  const mcpCommand = withCategory(language.t("command.category.mcp"))
-  const permissionsCommand = withCategory(language.t("command.category.permissions"))
 
-  const isAutoAcceptActive = () => {
-    const sessionID = params.id
-    if (sessionID) return permission.isAutoAccepting(sessionID, sdk().directory)
-    return permission.isAutoAcceptingDirectory(sdk().directory)
-  }
   const write = async (value: string) => {
     const body = typeof document === "undefined" ? undefined : document.body
     if (body) {
@@ -306,31 +297,6 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     if (last) view().terminal.close()
   }
 
-  const chooseMcp = () => {
-    void openDialog(
-      () => import("@/components/dialog-select-mcp"),
-      (x) => dialog.show(() => <x.DialogSelectMcp />),
-    )
-  }
-
-  const toggleAutoAccept = () => {
-    const sessionID = params.id
-    if (sessionID) permission.toggleAutoAccept(sessionID, sdk().directory)
-    else permission.toggleAutoAcceptDirectory(sdk().directory)
-
-    const active = sessionID
-      ? permission.isAutoAccepting(sessionID, sdk().directory)
-      : permission.isAutoAcceptingDirectory(sdk().directory)
-    showToast({
-      title: active
-        ? language.t("toast.permissions.autoaccept.on.title")
-        : language.t("toast.permissions.autoaccept.off.title"),
-      description: active
-        ? language.t("toast.permissions.autoaccept.on.description")
-        : language.t("toast.permissions.autoaccept.off.description"),
-    })
-  }
-
   const undo = async () => {
     const sessionID = params.id
     if (!sessionID) return
@@ -451,6 +417,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       title: language.t("command.session.new"),
       keybind: "mod+shift+s",
       slash: "new",
+      slashAliases: ["clear", "reset"],
       onSelect: (source) => {
         if (settings.general.newLayoutDesigns()) {
           command.trigger("tab.new", source)
@@ -464,6 +431,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       title: language.t("command.session.undo"),
       description: language.t("command.session.undo.description"),
       slash: "undo",
+      slashAliases: ["rewind"],
       disabled: !params.id || visibleUserMessages().length === 0,
       onSelect: undo,
     }),
@@ -480,6 +448,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       title: language.t("command.session.compact"),
       description: language.t("command.session.compact.description"),
       slash: "compact",
+      slashAliases: ["summarize"],
       disabled: !params.id || visibleUserMessages().length === 0,
       onSelect: compact,
     }),
@@ -620,29 +589,6 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     }),
   ]
 
-  const mcpCmds = () => [
-    mcpCommand({
-      id: "mcp.toggle",
-      title: language.t("command.mcp.toggle"),
-      description: language.t("command.mcp.toggle.description"),
-      keybind: "mod+;",
-      slash: "mcp",
-      onSelect: chooseMcp,
-    }),
-  ]
-
-  const permissionsCmds = () => [
-    permissionsCommand({
-      id: "permissions.autoaccept",
-      title: isAutoAcceptActive()
-        ? language.t("command.permissions.autoaccept.disable")
-        : language.t("command.permissions.autoaccept.enable"),
-      keybind: "mod+shift+a",
-      disabled: false,
-      onSelect: toggleAutoAccept,
-    }),
-  ]
-
   command.register("session", () => [
     ...sessionCmds(),
     ...shareCmds(),
@@ -651,7 +597,5 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     ...viewCmds(),
     ...terminalCmds(),
     ...messageCmds(),
-    ...mcpCmds(),
-    ...permissionsCmds(),
   ])
 }

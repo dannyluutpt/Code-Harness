@@ -22,6 +22,7 @@ export default function NewSessionPage() {
   })
   useNewSessionCommands({
     restoreFocus: draft.input.restoreFocus,
+    clearDraft: draft.prompt.reset,
     project: {
       empty: project.empty,
       open: () => project.setOpen(true),

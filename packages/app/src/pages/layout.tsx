@@ -929,6 +929,8 @@ export default function LegacyLayout(props: ParentProps) {
         id: "provider.connect",
         title: language.t("command.provider.connect"),
         category: language.t("command.category.provider"),
+        slash: "login",
+        slashAliases: ["connect", "providers"],
         onSelect: () => connectProvider(),
       },
       {
@@ -942,6 +944,8 @@ export default function LegacyLayout(props: ParentProps) {
         title: language.t("command.settings.open"),
         category: language.t("command.category.settings"),
         keybind: "mod+comma",
+        slash: "settings",
+        slashAliases: ["config"],
         onSelect: () => openSettings(),
       },
       {

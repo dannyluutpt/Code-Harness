@@ -42,6 +42,8 @@ export type PromptInputV2Props = {
   class?: string
   modelControl?: JSX.Element
   variantControlVisible?: boolean
+  /** Rendered after the variant select, e.g. the app's permission mode menu. */
+  trailingControl?: JSX.Element
   attachKeybind?: string[]
   attachShortcut?: string
 }
@@ -253,6 +255,7 @@ export function PromptInputV2(props: PromptInputV2Props) {
                 </Show>
               )}
             </Show>
+            {props.trailingControl}
           </div>
           <PromptInputV2SubmitButton
             mode={state.mode}

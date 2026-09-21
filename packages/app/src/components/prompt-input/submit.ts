@@ -10,6 +10,7 @@ import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { useLocal, type ModelSelection } from "@/context/local"
 import { usePermission } from "@/context/permission"
+import type { ConfigPermissionV1 } from "@kiwii/core/v1/config/permission"
 import { type ContextItem, type ImageAttachmentPart, type Prompt, type usePrompt } from "@/context/prompt"
 import { useSDK, type DirectorySDK } from "@/context/sdk"
 import { useSync, type DirectorySync } from "@/context/sync"
@@ -212,7 +213,9 @@ type PromptSubmitInput = {
   info: Accessor<{ id: string } | undefined>
   imageAttachments: Accessor<ImageAttachmentPart[]>
   commentCount: Accessor<number>
-  autoAccept: Accessor<boolean>
+  permissionMode: Accessor<ConfigPermissionV1.Mode>
+  /** Runs a client-side slash command; returns true when the text was one and must not reach the model. */
+  slash?: (text: string) => boolean
   mode: Accessor<"normal" | "shell">
   working: Accessor<boolean>
   editor: () => HTMLDivElement | undefined
@@ -335,6 +338,13 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       return
     }
 
+    // Client-side slash commands never reach the model, with or without arguments.
+    if (mode === "normal" && images.length === 0 && input.slash?.(text.trim())) {
+      submission.clear()
+      input.setPopover(null)
+      return
+    }
+
     const modelSelection = input.model ?? local.model
     const currentModel = modelSelection.current()
     const currentAgent = local.agent.current()
@@ -353,7 +363,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     const projectDirectory = sdk().directory
     const permissionState = permission.currentServerState()
     const isNewSession = !params.id
-    const shouldAutoAccept = isNewSession && input.autoAccept()
+    const permissionMode = input.permissionMode()
     const worktreeSelection = input.newSessionWorktree?.() || "main"
 
     let sessionDirectory = projectDirectory
@@ -419,7 +429,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
         session = created
         await startTransition(() => {
           if (!session) return
-          if (shouldAutoAccept) permissionState.enableAutoAccept(session.id, sessionDirectory)
+          if (permissionMode !== "default") permissionState.setMode(session.id, sessionDirectory, permissionMode)
           local.session.promote(sessionDirectory, session.id, {
             agent: currentAgent.name,
             model: { providerID: currentModel.provider.id, modelID: currentModel.id },

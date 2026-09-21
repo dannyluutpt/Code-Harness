@@ -13,6 +13,8 @@ import type { PromptInputProps } from "@/components/prompt-input/contracts"
 import { normalizePromptHistoryEntry, promptLength, type PromptHistoryComment } from "@/components/prompt-input/history"
 import { createPersistedPromptInputHistory } from "@/components/prompt-input/history-store"
 import { promptDesignPlaceholder, promptPlaceholder } from "@/components/prompt-input/placeholder"
+import { PromptPermissionModeControl } from "@/components/prompt-input/permission-mode"
+import { useSlashCommandRunner } from "@/components/prompt-input/slash-command"
 import { createPromptSubmit } from "@/components/prompt-input/submit"
 import { selectionFromLines, type SelectedLineRange, useFile } from "@/context/file"
 import { useComments } from "@/context/comments"
@@ -58,6 +60,7 @@ export function PromptInputV2Composer(props: PromptInputV2ComposerProps) {
         variantControlVisible={!props.controller.model.loading}
         attachKeybind={command.keybindParts("file.attach")}
         attachShortcut={command.keybind("file.attach")}
+        trailingControl={<PromptPermissionModeControl onClose={props.controller.restoreFocus} />}
         modelControl={
           <PromptInputV2ModelControl
             loading={props.controller.model.loading}
@@ -190,17 +193,13 @@ export function usePromptInputV2Controller(props: PromptInputV2ControllerProps):
     )
   }
 
-  const accepting = createMemo(() => {
-    const id = props.controls.session.id
-    if (!id) return permission.isAutoAcceptingDirectory(sdk().directory)
-    return permission.isAutoAccepting(id, sdk().directory)
-  })
   const submission = createPromptSubmit({
     prompt,
     info,
     imageAttachments: attachments,
     commentCount,
-    autoAccept: accepting,
+    permissionMode: () => permission.mode(props.controls.session.id, sdk().directory),
+    slash: useSlashCommandRunner({ model: () => props.controls.model.selection }),
     mode,
     working,
     editor: () => editor,
@@ -299,13 +298,16 @@ export function usePromptInputV2Controller(props: PromptInputV2ControllerProps):
     })),
     ...command.options
       .filter((item) => !item.disabled && !item.id.startsWith("suggested.") && item.slash)
-      .map((item) => ({
-        id: item.id,
-        trigger: item.slash!,
-        title: item.title,
-        description: item.description,
-        type: "builtin" as const,
-      })),
+      .flatMap((item) =>
+        [item.slash!, ...(item.slashAliases ?? [])].map((trigger, index) => ({
+          id: index === 0 ? item.id : `${item.id}:${trigger}`,
+          command: item.id,
+          trigger,
+          title: item.title,
+          description: item.description,
+          type: "builtin" as const,
+        })),
+      ),
   ])
   const commands = createMemo<PromptInputV2Suggestion[]>(() =>
     slashCommands().map((item) => ({
@@ -315,7 +317,7 @@ export function usePromptInputV2Controller(props: PromptInputV2ControllerProps):
       trigger: item.trigger,
       title: item.title,
       description: item.description,
-      keybind: command.keybindParts(item.id),
+      keybind: command.keybindParts("command" in item ? item.command : item.id),
     })),
   )
   const variants = createMemo(() => ["default", ...props.controls.model.selection.variant.list()])
@@ -360,7 +362,7 @@ export function usePromptInputV2Controller(props: PromptInputV2ControllerProps):
       if (item.kind !== "command") return
       const selected = slashCommands().find((entry) => entry.id === item.id)
       if (!selected || selected.type === "custom") return
-      return () => command.trigger(selected.id, "slash")
+      return () => command.trigger(selected.command, "slash")
     },
     attachments: {
       picker: platform.openAttachmentPickerDialog,

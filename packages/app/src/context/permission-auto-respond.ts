@@ -1,4 +1,7 @@
 import { base64Encode } from "@kiwii/core/util/encode"
+import { ConfigPermissionV1 } from "@kiwii/core/v1/config/permission"
+
+export type PermissionModes = Record<string, ConfigPermissionV1.Mode>
 
 export function acceptKey(sessionID: string, directory?: string) {
   if (!directory) return sessionID
@@ -9,14 +12,28 @@ export function directoryAcceptKey(directory: string) {
   return `${base64Encode(directory)}/*`
 }
 
-function accepted(autoAccept: Record<string, boolean>, sessionID: string, directory?: string) {
-  const key = acceptKey(sessionID, directory)
-  return autoAccept[key] ?? autoAccept[sessionID]
+/**
+ * Upgrades the persisted boolean auto-accept store to permission modes. The old toggle replied "once" to every
+ * request, so `true` becomes bypassPermissions; `false` stays an explicit default so it still overrides a parent.
+ */
+export function migratePermissionModes(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value
+  const data = value as Record<string, unknown>
+  if (data.mode && typeof data.mode === "object" && !Array.isArray(data.mode)) return value
+  const legacy = [data.autoAccept, data.autoAcceptEdits].find(
+    (item): item is Record<string, unknown> => !!item && typeof item === "object" && !Array.isArray(item),
+  )
+  return {
+    mode: Object.fromEntries(
+      Object.entries(legacy ?? {})
+        .filter((entry): entry is [string, boolean] => typeof entry[1] === "boolean")
+        .map(([key, accept]) => [key, accept ? "bypassPermissions" : "default"]),
+    ),
+  }
 }
 
-export function isDirectoryAutoAccepting(autoAccept: Record<string, boolean>, directory: string) {
-  const key = directoryAcceptKey(directory)
-  return autoAccept[key] ?? false
+export function directoryPermissionMode(modes: PermissionModes, directory: string) {
+  return modes[directoryAcceptKey(directory)] ?? "default"
 }
 
 function sessionLineage(session: { id: string; parentID?: string }[], sessionID: string) {
@@ -37,24 +54,38 @@ function sessionLineage(session: { id: string; parentID?: string }[], sessionID:
   return ids
 }
 
-export function autoRespondsPermission(
-  autoAccept: Record<string, boolean>,
-  session: { id: string; parentID?: string }[],
-  permission: { sessionID: string },
-  directory?: string,
-) {
-  const value = sessionAutoAccept(autoAccept, session, permission, directory)
-  if (value !== undefined) return value
-  return directory ? isDirectoryAutoAccepting(autoAccept, directory) : false
-}
-
-export function sessionAutoAccept(
-  autoAccept: Record<string, boolean>,
+/** The mode set on the session or the nearest ancestor, ignoring the directory fallback. */
+export function sessionPermissionMode(
+  modes: PermissionModes,
   session: { id: string; parentID?: string }[],
   permission: { sessionID: string },
   directory?: string,
 ) {
   return sessionLineage(session, permission.sessionID)
-    .map((id) => accepted(autoAccept, id, directory))
-    .find((item): item is boolean => item !== undefined)
+    .map((id) => modes[acceptKey(id, directory)] ?? modes[id])
+    .find((item) => item !== undefined)
+}
+
+export function permissionMode(
+  modes: PermissionModes,
+  session: { id: string; parentID?: string }[],
+  permission: { sessionID: string },
+  directory?: string,
+) {
+  const mode = sessionPermissionMode(modes, session, permission, directory)
+  if (mode) return mode
+  return directory ? directoryPermissionMode(modes, directory) : "default"
+}
+
+export function autoRespondsPermission(
+  modes: PermissionModes,
+  session: { id: string; parentID?: string }[],
+  permission: { sessionID: string; permission: string; patterns?: ReadonlyArray<string> },
+  directory?: string,
+) {
+  return ConfigPermissionV1.autoApprove(
+    permissionMode(modes, session, permission, directory),
+    permission.permission,
+    permission.patterns,
+  )
 }

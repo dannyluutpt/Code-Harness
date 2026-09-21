@@ -36,15 +36,15 @@ export function createPermissionScopeController(sessionID: Accessor<string | und
       const id = sessionID()
       const dir = directory()
       if (!id || !dir) return false
-      return permission.isAutoAccepting(id, dir)
+      return permission.mode(id, dir) === "bypassPermissions"
     }),
     enabled: createMemo(() => !!directory()),
     set: (checked: boolean) => {
       const id = sessionID()
       const dir = directory()
       if (!id || !dir) return
-      if (checked) return permission.enableAutoAccept(id, dir)
-      permission.disableAutoAccept(id, dir)
+      // The switch keeps its old meaning: approve every request, which is the bypass permissions mode.
+      permission.setMode(id, dir, checked ? "bypassPermissions" : "default")
     },
   }
 }

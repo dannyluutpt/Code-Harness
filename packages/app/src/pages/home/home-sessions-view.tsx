@@ -75,7 +75,7 @@ export function HomeSessionsView(props: HomeSessionsViewProps) {
   return (
     <section
       ref={props.onSetHoverTarget}
-      class="min-h-0 min-w-0 flex-1 flex flex-col"
+      class="mx-auto min-h-0 w-full min-w-0 max-w-[760px] flex-1 flex flex-col lg:px-6"
       aria-label={props.language.t("sidebar.project.recentSessions")}
     >
       <div class="sticky top-0 z-30 shrink-0 bg-v2-background-bg-base pb-3 pt-6 lg:pt-12" onWheel={props.onWheel}>

@@ -5,6 +5,7 @@ import { useLanguage } from "@/context/language"
 
 export function useNewSessionCommands(input: {
   restoreFocus: () => void
+  clearDraft: () => void
   project: {
     empty: () => boolean
     open: () => void
@@ -23,6 +24,18 @@ export function useNewSessionCommands(input: {
       onSelect: async () => {
         const { DialogSelectFile } = await import("@/components/dialog-select-file")
         void dialog.show(() => <DialogSelectFile />)
+      },
+    },
+    // Already a fresh session: the TUI names start the draft over instead of opening yet another tab.
+    {
+      id: "session.new",
+      title: language.t("command.session.new"),
+      category: language.t("command.category.session"),
+      slash: "new",
+      slashAliases: ["clear", "reset"],
+      onSelect: () => {
+        input.clearDraft()
+        input.restoreFocus()
       },
     },
     {

@@ -1,125 +1,116 @@
 import { describe, expect, test } from "bun:test"
-import type { PermissionRequest, Session } from "@kiwii/sdk/v2/client"
 import { base64Encode } from "@kiwii/core/util/encode"
-import { autoRespondsPermission, isDirectoryAutoAccepting, sessionAutoAccept } from "./permission-auto-respond"
+import {
+  autoRespondsPermission,
+  directoryPermissionMode,
+  migratePermissionModes,
+  permissionMode,
+  sessionPermissionMode,
+  type PermissionModes,
+} from "./permission-auto-respond"
 
-const session = (input: { id: string; parentID?: string }) =>
-  ({
-    id: input.id,
-    parentID: input.parentID,
-  }) as Session
+const directory = "/tmp/project"
+const key = (id: string) => `${base64Encode(directory)}/${id}`
+const family = [{ id: "root" }, { id: "child", parentID: "root" }, { id: "other" }]
+const request = (sessionID: string, permission = "bash", patterns = ["rm -rf build"]) => ({
+  sessionID,
+  permission,
+  patterns,
+})
 
-const permission = (sessionID: string) =>
-  ({
-    sessionID,
-  }) as Pick<PermissionRequest, "sessionID">
-
-describe("autoRespondsPermission", () => {
-  test("uses a parent session's directory-scoped auto-accept", () => {
-    const directory = "/tmp/project"
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
-    const autoAccept = {
-      [`${base64Encode(directory)}/root`]: true,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("child"), directory)).toBe(true)
+describe("permissionMode", () => {
+  test("uses a parent session's directory-scoped mode", () => {
+    expect(permissionMode({ [key("root")]: "auto" }, family, { sessionID: "child" }, directory)).toBe("auto")
   })
 
-  test("uses a parent session's legacy auto-accept key", () => {
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
-
-    expect(autoRespondsPermission({ root: true }, sessions, permission("child"), "/tmp/project")).toBe(true)
+  test("uses a parent session's legacy key", () => {
+    expect(permissionMode({ root: "acceptEdits" }, family, { sessionID: "child" }, directory)).toBe("acceptEdits")
   })
 
-  test("defaults to requiring approval when no lineage override exists", () => {
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" }), session({ id: "other" })]
-    const autoAccept = {
-      other: true,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("child"), "/tmp/project")).toBe(false)
+  test("defaults to manual when no lineage or directory mode exists", () => {
+    expect(permissionMode({ other: "bypassPermissions" }, family, { sessionID: "child" }, directory)).toBe("default")
   })
 
-  test("inherits a parent session's false override", () => {
-    const directory = "/tmp/project"
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
-    const autoAccept = {
-      [`${base64Encode(directory)}/root`]: false,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("child"), directory)).toBe(false)
+  test("prefers a child mode over the parent mode", () => {
+    const modes: PermissionModes = { [key("root")]: "default", [key("child")]: "bypassPermissions" }
+    expect(permissionMode(modes, family, { sessionID: "child" }, directory)).toBe("bypassPermissions")
   })
 
-  test("prefers a child override over parent override", () => {
-    const directory = "/tmp/project"
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
-    const autoAccept = {
-      [`${base64Encode(directory)}/root`]: false,
-      [`${base64Encode(directory)}/child`]: true,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("child"), directory)).toBe(true)
+  test("falls back to the directory mode", () => {
+    const modes: PermissionModes = { [key("*")]: "acceptEdits" }
+    expect(permissionMode(modes, family, { sessionID: "root" }, directory)).toBe("acceptEdits")
+    expect(sessionPermissionMode(modes, family, { sessionID: "root" }, directory)).toBeUndefined()
   })
 
-  test("falls back to directory-level auto-accept", () => {
-    const directory = "/tmp/project"
-    const sessions = [session({ id: "root" })]
-    const autoAccept = {
-      [`${base64Encode(directory)}/*`]: true,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("root"), directory)).toBe(true)
-    expect(sessionAutoAccept(autoAccept, sessions, permission("root"), directory)).toBeUndefined()
-  })
-
-  test("session-level override takes precedence over directory-level", () => {
-    const directory = "/tmp/project"
-    const sessions = [session({ id: "root" })]
-    const autoAccept = {
-      [`${base64Encode(directory)}/*`]: true,
-      [`${base64Encode(directory)}/root`]: false,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("root"), directory)).toBe(false)
-  })
-
-  test("parent false override takes precedence over directory-level auto-accept", () => {
-    const directory = "/tmp/project"
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
-    const autoAccept = {
-      [`${base64Encode(directory)}/*`]: true,
-      [`${base64Encode(directory)}/root`]: false,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("child"), directory)).toBe(false)
-  })
-
-  test("parent true override takes precedence over disabled directory fallback", () => {
-    const directory = "/tmp/project"
-    const sessions = [session({ id: "root" }), session({ id: "child", parentID: "root" })]
-    const autoAccept = {
-      [`${base64Encode(directory)}/*`]: false,
-      [`${base64Encode(directory)}/root`]: true,
-    }
-
-    expect(autoRespondsPermission(autoAccept, sessions, permission("child"), directory)).toBe(true)
+  test("an explicit manual session overrides the directory mode, also for children", () => {
+    const modes: PermissionModes = { [key("*")]: "bypassPermissions", [key("root")]: "default" }
+    expect(permissionMode(modes, family, { sessionID: "root" }, directory)).toBe("default")
+    expect(permissionMode(modes, family, { sessionID: "child" }, directory)).toBe("default")
   })
 })
 
-describe("isDirectoryAutoAccepting", () => {
-  test("returns true when directory key is set", () => {
-    const directory = "/tmp/project"
-    const autoAccept = { [`${base64Encode(directory)}/*`]: true }
-    expect(isDirectoryAutoAccepting(autoAccept, directory)).toBe(true)
+describe("directoryPermissionMode", () => {
+  test("returns the stored mode or manual", () => {
+    expect(directoryPermissionMode({ [key("*")]: "plan" }, directory)).toBe("plan")
+    expect(directoryPermissionMode({}, directory)).toBe("default")
+  })
+})
+
+describe("autoRespondsPermission", () => {
+  const responds = (mode: PermissionModes[string], permission: string, patterns: string[] = []) =>
+    autoRespondsPermission({ [key("root")]: mode }, family, request("child", permission, patterns), directory)
+
+  test("manual and plan approve nothing", () => {
+    expect(responds("default", "edit")).toBe(false)
+    expect(responds("plan", "read")).toBe(false)
   })
 
-  test("returns false when directory key is not set", () => {
-    expect(isDirectoryAutoAccepting({}, "/tmp/project")).toBe(false)
+  test("accept edits approves file tools but not shell commands", () => {
+    expect(responds("acceptEdits", "edit")).toBe(true)
+    expect(responds("acceptEdits", "read")).toBe(true)
+    expect(responds("acceptEdits", "bash", ["ls"])).toBe(false)
   })
 
-  test("returns false when directory key is explicitly false", () => {
-    const directory = "/tmp/project"
-    const autoAccept = { [`${base64Encode(directory)}/*`]: false }
-    expect(isDirectoryAutoAccepting(autoAccept, directory)).toBe(false)
+  test("auto additionally approves known-safe shell commands only", () => {
+    expect(responds("auto", "edit")).toBe(true)
+    expect(responds("auto", "bash", ["git status", "ls -la"])).toBe(true)
+    expect(responds("auto", "bash", ["git status", "rm -rf build"])).toBe(false)
+    expect(responds("auto", "webfetch")).toBe(false)
+  })
+
+  test("bypass approves everything", () => {
+    expect(responds("bypassPermissions", "bash", ["rm -rf build"])).toBe(true)
+    expect(responds("bypassPermissions", "webfetch")).toBe(true)
+  })
+
+  test("without a session mode the directory mode decides", () => {
+    expect(autoRespondsPermission({ [key("*")]: "acceptEdits" }, family, request("other", "edit"), directory)).toBe(
+      true,
+    )
+    expect(autoRespondsPermission({ [key("*")]: "acceptEdits" }, family, request("other"), directory)).toBe(false)
+    expect(autoRespondsPermission({}, family, request("other", "edit"), directory)).toBe(false)
+  })
+})
+
+describe("migratePermissionModes", () => {
+  test("maps the old approve-everything toggle onto bypass permissions and keeps explicit off as manual", () => {
+    expect(migratePermissionModes({ autoAccept: { [key("root")]: true, [key("*")]: false, legacy: true } })).toEqual({
+      mode: { [key("root")]: "bypassPermissions", [key("*")]: "default", legacy: "bypassPermissions" },
+    })
+  })
+
+  test("reads the older autoAcceptEdits field", () => {
+    expect(migratePermissionModes({ autoAcceptEdits: { root: true } })).toEqual({ mode: { root: "bypassPermissions" } })
+  })
+
+  test("drops values that are not booleans and handles missing data", () => {
+    expect(migratePermissionModes({ autoAccept: { root: "yes" } })).toEqual({ mode: {} })
+    expect(migratePermissionModes({})).toEqual({ mode: {} })
+    expect(migratePermissionModes(undefined)).toBeUndefined()
+  })
+
+  test("leaves already migrated data untouched", () => {
+    const value = { mode: { root: "auto" } }
+    expect(migratePermissionModes(value)).toBe(value)
   })
 })

@@ -72,6 +72,7 @@ import {
   type PromptInputState,
   type PromptInputSubmission,
 } from "./prompt-input/contracts"
+import { useSlashCommandRunner } from "./prompt-input/slash-command"
 import { createPromptSubmit } from "./prompt-input/submit"
 import { PromptPopover, type AtOption, type SlashCommand } from "./prompt-input/slash-popover"
 import { PromptContextItems } from "./prompt-input/context-items"
@@ -694,14 +695,17 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const slashCommands = createMemo<SlashCommand[]>(() => {
     const builtin = command.options
       .filter((opt) => !opt.disabled && !opt.id.startsWith("suggested.") && opt.slash)
-      .map((opt) => ({
-        id: opt.id,
-        trigger: opt.slash!,
-        title: opt.title,
-        description: opt.description,
-        keybind: opt.keybind,
-        type: "builtin" as const,
-      }))
+      .flatMap((opt) =>
+        [opt.slash!, ...(opt.slashAliases ?? [])].map((trigger, index) => ({
+          id: index === 0 ? opt.id : `${opt.id}:${trigger}`,
+          command: opt.id,
+          trigger,
+          title: opt.title,
+          description: opt.description,
+          keybind: opt.keybind,
+          type: "builtin" as const,
+        })),
+      )
 
     const custom = sync().data.command.map((cmd) => ({
       id: `custom.${cmd.name}`,
@@ -737,13 +741,13 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     }
 
     if (menu) {
-      command.trigger(cmd.id, "slash")
+      command.trigger(cmd.command ?? cmd.id, "slash")
       return
     }
 
     clearEditor()
     prompt.set([...DEFAULT_PROMPT, ...images], 0)
-    command.trigger(cmd.id, "slash")
+    command.trigger(cmd.command ?? cmd.id, "slash")
   }
 
   const {
@@ -756,6 +760,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     items: slashCommands,
     key: (x) => x?.id,
     filterKeys: ["trigger", "title"],
+    rank: (item, filter) => (item.trigger === filter ? 0 : item.trigger.toLowerCase().startsWith(filter) ? 1 : 2),
     onSelect: handleSlashSelect,
   })
 
@@ -1192,11 +1197,6 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const variants = createMemo(() => ["default", ...props.controls.model.selection.variant.list()])
   // Check provider variants directly: `variants` also includes the UI-only default option.
   const showVariantControl = createMemo(() => props.controls.model.selection.variant.list().length > 0)
-  const accepting = createMemo(() => {
-    const id = props.controls.session.id
-    if (!id) return permission.isAutoAcceptingDirectory(sdk().directory)
-    return permission.isAutoAccepting(id, sdk().directory)
-  })
 
   const { abort, handleSubmit } =
     props.submission ??
@@ -1205,7 +1205,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       info,
       imageAttachments,
       commentCount,
-      autoAccept: () => accepting(),
+      permissionMode: () => permission.mode(props.controls.session.id, sdk().directory),
+      slash: useSlashCommandRunner({ model: () => props.controls.model.selection }),
       mode: () => store.mode,
       working,
       editor: () => editorRef,
