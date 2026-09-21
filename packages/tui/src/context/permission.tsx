@@ -1,5 +1,6 @@
 import { createStore } from "solid-js/store"
 import { ConfigPermissionV1 } from "@kiwii/core/v1/config/permission"
+import type { Theme } from "../theme"
 import { useArgs } from "./args"
 import { createSimpleContext } from "./helper"
 
@@ -44,6 +45,22 @@ export function permissionModeLabel(mode: PermissionMode) {
       return "bypass permissions"
     default:
       return "manual"
+  }
+}
+
+/** Accent for the prompt box: the mode is readable from the border alone. */
+export function permissionModeColor(mode: PermissionMode, theme: Theme) {
+  switch (mode) {
+    case "bypassPermissions":
+      return theme.permissionBypass
+    case "auto":
+      return theme.permissionAuto
+    case "acceptEdits":
+      return theme.permissionAcceptEdits
+    case "plan":
+      return theme.permissionPlan
+    default:
+      return theme.permissionDefault
   }
 }
 

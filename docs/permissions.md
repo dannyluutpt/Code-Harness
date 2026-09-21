@@ -14,6 +14,18 @@
 
 Đặt mode: cờ `--permission-mode acceptEdits`, biến `KIWII_PERMISSION_MODE`, khoá `permission_mode` trong `kiwii.json`, phím `Shift+Tab`, lệnh `/permissions <manual|accept-edits|plan|auto|bypass>` hoặc bảng lệnh trong TUI. `Shift+Tab` xoay vòng manual → accept edits → plan → auto; `bypassPermissions` chỉ vào vòng khi đã được bật tường minh (cờ, biến môi trường, config, `/permissions bypass` hoặc bảng lệnh). `--auto` tương đương `--permission-mode auto`; `--yolo`/`--dangerously-skip-permissions` tương đương `bypassPermissions`. Trong `kiwii run`, mode `default` tự từ chối yêu cầu quyền (không có ai để hỏi), nên dùng `acceptEdits` hoặc `bypassPermissions` cho CI.
 
+**Màu khung nhập trong TUI** đổi theo mode đang bật, nên nhìn viền là biết mình đang ở đâu:
+
+| Mode | Màu |
+|---|---|
+| `default` (manual) | xanh lá |
+| `plan` | xanh dương |
+| `acceptEdits` | vàng |
+| `auto` | cam |
+| `bypassPermissions` | đỏ |
+
+Theme đổi được năm màu này qua các khoá `permissionDefault`, `permissionPlan`, `permissionAcceptEdits`, `permissionAuto`, `permissionBypass` trong file theme; bỏ trống thì dùng màu mặc định ở bảng trên.
+
 ### Allow/deny list
 
 ```jsonc
@@ -33,5 +45,7 @@ Tên tool: `Bash`, `Edit`/`Write`, `Read`, `Glob`, `Grep`, `WebFetch`, `WebSearc
 ## English
 
 Modes: `default` (ask per rules), `acceptEdits` (auto-approve file reads/edits), `plan` (read-only via the built-in `plan` agent), `auto` (rule-based: auto-approves file edits, read-only tools and a fixed list of read-only/test shell commands; anything with redirection, chaining or substitution, webfetch, external directories and every other command still asks), `bypassPermissions` (approve everything not denied). Set with `--permission-mode`, `KIWII_PERMISSION_MODE`, `permission_mode` in config, `Shift+Tab` or `/permissions <manual|accept-edits|plan|auto|bypass>` in the TUI (`Shift+Tab` cycles manual → accept edits → plan → auto, and includes `bypassPermissions` only after it was enabled explicitly); `--auto` means `--permission-mode auto`; `--yolo`/`--dangerously-skip-permissions` mean `bypassPermissions`. Headless `kiwii run` auto-rejects prompts in `default`, so use `acceptEdits` or `bypassPermissions` in CI.
+
+**The TUI prompt border is colored by mode** so the active mode is readable at a glance: green for `default`, blue for `plan`, yellow for `acceptEdits`, orange for `auto`, red for `bypassPermissions`. A theme can override them with the `permissionDefault`, `permissionPlan`, `permissionAcceptEdits`, `permissionAuto` and `permissionBypass` keys.
 
 `permissions.allow/ask/deny` accept Claude Code style entries (`Bash(git *)`, `Edit(src/**)`, `WebFetch(domain:x)`, `mcp__server__tool`); they are converted into the native `permission` ruleset with deny last, so deny always wins. The native `permission` map (`tool → action` or `tool → {pattern: action}`) is still available and can be overridden per agent.

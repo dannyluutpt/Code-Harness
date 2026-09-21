@@ -15,7 +15,7 @@ import path from "path"
 import * as fuzzysort from "fuzzysort"
 import { fileURLToPath } from "url"
 import { useLocal } from "../../context/local"
-import { PERMISSION_MODE_ALIASES, permissionModeLabel } from "../../context/permission"
+import { PERMISSION_MODE_ALIASES, permissionModeColor, permissionModeLabel } from "../../context/permission"
 import { Flag } from "@kiwii/core/flag/flag"
 import { tint, useTheme } from "../../context/theme"
 import { money, sessionUsage } from "../../util/usage"
@@ -1350,9 +1350,7 @@ export function Prompt(props: PromptProps) {
   const highlight = createMemo(() => {
     if (leader()) return theme.border
     if (store.mode === "shell") return theme.primary
-    const agent = local.agent.current()
-    if (!agent) return theme.border
-    return local.agent.color(agent.name)
+    return permissionModeColor(local.permission.mode, theme)
   })
 
   const showVariant = createMemo(() => {
@@ -1523,16 +1521,7 @@ export function Prompt(props: PromptProps) {
               </box>
               <box flexDirection="row" gap={1} alignItems="center">
                 <Show when={store.mode === "normal"}>
-                  <text
-                    fg={fadeColor(
-                      local.permission.mode === "bypassPermissions"
-                        ? theme.warning
-                        : local.permission.mode === "auto"
-                          ? theme.primary
-                          : theme.textMuted,
-                      agentMetaAlpha(),
-                    )}
-                  >
+                  <text fg={fadeColor(permissionModeColor(local.permission.mode, theme), agentMetaAlpha())}>
                     {permissionModeLabel(local.permission.mode)}
                   </text>
                 </Show>

@@ -5,8 +5,10 @@ import {
   isPermissionMode,
   nextPermissionMode,
   PERMISSION_MODE_ALIASES,
+  permissionModeColor,
   permissionModeLabel,
 } from "../../src/context/permission"
+import { DEFAULT_THEMES, resolveTheme } from "../../src/theme"
 
 describe("tui permission modes", () => {
   test("cycle order excludes bypassPermissions until it was enabled", () => {
@@ -32,5 +34,17 @@ describe("tui permission modes", () => {
     expect(autoApprove("acceptEdits", "bash")).toBe(false)
     expect(autoApprove("bypassPermissions", "bash")).toBe(true)
     expect(autoApprove("plan", "read")).toBe(false)
+  })
+})
+
+describe("permission mode accents", () => {
+  const theme = resolveTheme(structuredClone(DEFAULT_THEMES.kiwii), "dark")
+
+  test("each mode gets its own theme token", () => {
+    expect(permissionModeColor("default", theme)).toBe(theme.permissionDefault)
+    expect(permissionModeColor("auto", theme)).toBe(theme.permissionAuto)
+    expect(permissionModeColor("acceptEdits", theme)).toBe(theme.permissionAcceptEdits)
+    expect(permissionModeColor("plan", theme)).toBe(theme.permissionPlan)
+    expect(permissionModeColor("bypassPermissions", theme)).toBe(theme.permissionBypass)
   })
 })
