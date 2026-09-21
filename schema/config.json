@@ -145,10 +145,10 @@
               "$ref": "#/$defs/PermissionActionConfig"
             },
             "webfetch": {
-              "$ref": "#/$defs/PermissionActionConfig"
+              "$ref": "#/$defs/PermissionRuleConfig"
             },
             "websearch": {
-              "$ref": "#/$defs/PermissionActionConfig"
+              "$ref": "#/$defs/PermissionRuleConfig"
             },
             "lsp": {
               "$ref": "#/$defs/PermissionRuleConfig"

@@ -633,7 +633,10 @@ const layer = Layer.effect(
           for (const [key, rule] of Object.entries(converted)) {
             const current = result.permission[key]
             const base = typeof current === "string" ? { "*": current } : (current ?? {})
-            result.permission[key] = { ...base, ...(rule as Record<string, ConfigPermissionV1.Action>) }
+            const merged = { ...base, ...(rule as Record<string, ConfigPermissionV1.Action>) }
+            // A lone catch-all is the plain action; keys like todowrite and question only accept that form.
+            const patterns = Object.keys(merged)
+            result.permission[key] = patterns.length === 1 && patterns[0] === "*" ? merged["*"]! : merged
           }
         }
 
