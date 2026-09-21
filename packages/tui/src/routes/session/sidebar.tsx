@@ -7,6 +7,7 @@ import { InstallationChannel, InstallationVersion } from "@kiwii/core/installati
 import { usePluginRuntime } from "../../plugin/runtime"
 
 import { getScrollAcceleration } from "../../util/scroll"
+import { SIDEBAR_WIDTH } from "../../util/layout"
 import { WorkspaceLabel } from "../../component/workspace-label"
 
 export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
@@ -27,7 +28,7 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
     <Show when={session()}>
       <box
         backgroundColor={theme.backgroundPanel}
-        width={42}
+        width={SIDEBAR_WIDTH}
         height="100%"
         paddingTop={1}
         paddingBottom={1}
@@ -54,11 +55,10 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
               share_url={session()!.share?.url}
             >
               <box paddingRight={1}>
-                <text fg={theme.text}>
-                  <b>{session()!.title}</b>
-                </text>
                 <Show when={InstallationChannel !== "latest"}>
-                  <text fg={theme.textMuted}>{props.sessionID}</text>
+                  <text fg={theme.textMuted} wrapMode="none" truncate>
+                    {props.sessionID}
+                  </text>
                 </Show>
                 <Show when={session()!.workspaceID}>
                   <text fg={theme.textMuted}>
@@ -89,9 +89,9 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
         <box flexShrink={0} gap={1} paddingTop={1}>
           <pluginRuntime.Slot name="sidebar_footer" mode="single_winner" session_id={props.sessionID}>
             <text fg={theme.textMuted}>
-              <span style={{ fg: theme.success }}>•</span> <b>Open</b>
+              <span style={{ fg: theme.primary }}>●</span>{" "}
               <span style={{ fg: theme.text }}>
-                <b>Code</b>
+                <b>kiwii</b>
               </span>{" "}
               <span>{InstallationVersion}</span>
             </text>

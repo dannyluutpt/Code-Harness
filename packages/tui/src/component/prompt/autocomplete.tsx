@@ -15,7 +15,6 @@ import { useTuiPaths } from "../../context/runtime"
 import { useTuiConfig } from "../../config"
 import { useLocation } from "../../context/location"
 import { useTheme, selectedForeground } from "../../context/theme"
-import { SplitBorder } from "../../ui/border"
 import { useTerminalDimensions } from "@opentui/solid"
 import { Locale } from "../../util/locale"
 import type { PromptInfo } from "../../prompt/history"
@@ -578,6 +577,26 @@ export function Autocomplete(props: {
     setStore("selected", 0)
   }
 
+  function complete() {
+    const selected = options()[store.selected]
+    if (selected?.isDirectory) {
+      expandDirectory()
+      return
+    }
+    // Slash commands are pasted rather than run, so arguments can follow (`/permissions auto`).
+    if (store.visible === "/" && selected) {
+      const text = selected.display.trimEnd().replace(/:mcp$/, "") + " "
+      const cursor = props.input().logicalCursor
+      props.input().deleteRange(0, 0, cursor.row, cursor.col)
+      props.input().insertText(text)
+      props.input().cursorOffset = Bun.stringWidth(text)
+      hide()
+      return
+    }
+
+    select()
+  }
+
   useBindings(() => ({
     target: props.input,
     enabled: () => Boolean(store.visible),
@@ -621,13 +640,20 @@ export function Autocomplete(props: {
         title: "Complete autocomplete item",
         category: "Autocomplete",
         run() {
-          const selected = options()[store.selected]
-          if (selected?.isDirectory) {
-            expandDirectory()
+          complete()
+        },
+      },
+      {
+        name: "prompt.autocomplete.accept",
+        title: "Accept autocomplete item at end of input",
+        category: "Autocomplete",
+        run() {
+          // Right arrow only completes when there is nothing left to move over.
+          if (props.input().cursorOffset < Bun.stringWidth(props.input().plainText)) {
+            props.input().cursorOffset += 1
             return
           }
-
-          select()
+          complete()
         },
       },
     ],
@@ -637,6 +663,7 @@ export function Autocomplete(props: {
       "prompt.autocomplete.hide",
       "prompt.autocomplete.select",
       "prompt.autocomplete.complete",
+      "prompt.autocomplete.accept",
     ]),
   }))
 
@@ -713,7 +740,8 @@ export function Autocomplete(props: {
     const count = options().length || 1
     if (!store.visible) return Math.min(10, count)
     positionTick()
-    return Math.min(10, count, Math.max(1, props.anchor().y))
+    // The popup's top and bottom border rows also have to fit above the prompt.
+    return Math.min(10, count, Math.max(1, props.anchor().y - 2))
   })
 
   let scroll: ScrollBoxRenderable
@@ -723,12 +751,14 @@ export function Autocomplete(props: {
     <box
       visible={store.visible !== false}
       position="absolute"
-      top={position().y - height()}
+      top={position().y - height() - 2}
       left={position().x}
       width={position().width}
       zIndex={100}
-      {...SplitBorder}
+      border
+      borderStyle="rounded"
       borderColor={theme.border}
+      backgroundColor={theme.backgroundMenu}
     >
       <scrollbox
         ref={(r: ScrollBoxRenderable) => (scroll = r)}

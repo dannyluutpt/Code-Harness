@@ -1,5 +1,8 @@
 import type { BaseRenderable, BoxRenderable } from "@opentui/core"
 
+// Outer width of the session sidebar, shared by the sidebar, the chat column and sidebar sections.
+export const SIDEBAR_WIDTH = 34
+
 const previousByParent = new WeakMap<
   BaseRenderable,
   { frameID: number; previous: WeakMap<BaseRenderable, BaseRenderable | undefined> }

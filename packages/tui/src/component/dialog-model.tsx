@@ -8,11 +8,15 @@ import { DialogVariant } from "./dialog-variant"
 import * as fuzzysort from "fuzzysort"
 import { useConnected } from "./use-connected"
 import { useSync } from "../context/sync"
+import { useSDK } from "../context/sdk"
+import { useToast } from "../ui/toast"
 
 export function DialogModel(props: { providerID?: string }) {
   const local = useLocal()
   const sync = useSync()
   const dialog = useDialog()
+  const sdk = useSDK()
+  const toast = useToast()
   const [query, setQuery] = createSignal("")
 
   const connected = useConnected()
@@ -171,6 +175,17 @@ export function DialogModel(props: { providerID?: string }) {
           hidden: !connected(),
           onTrigger: (option) => {
             local.model.toggleFavorite(option.value as { providerID: string; modelID: string })
+          },
+        },
+        {
+          command: "model.dialog.refresh",
+          title: "Refresh",
+          // Local servers (Ollama, llama.cpp) are only probed when the instance boots, so rebuild it.
+          async onTrigger() {
+            toast.show({ message: "Looking for local models…", variant: "info" })
+            await sdk.client.instance.dispose()
+            await sync.bootstrap()
+            toast.show({ message: "Model list refreshed", variant: "success" })
           },
         },
       ]}

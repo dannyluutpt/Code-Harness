@@ -102,10 +102,10 @@ Options:
                          minimal)                                                           [string]
       --thinking         show thinking blocks                                              [boolean]
   -i, --interactive      run in direct interactive split-footer mode      [boolean] [default: false]
-      --permission-mode  permission mode: default, acceptEdits, plan or bypassPermissions
-                           [string] [choices: "default", "acceptEdits", "plan", "bypassPermissions"]
-      --auto             auto-approve permissions that are not explicitly denied (dangerous!)
-                                                                          [boolean] [default: false]"
+      --permission-mode  permission mode: default, acceptEdits, plan, auto or bypassPermissions
+                   [string] [choices: "default", "acceptEdits", "plan", "auto", "bypassPermissions"]
+      --auto             alias for --permission-mode auto: approve edits and known-safe commands,
+                         ask for the rest                                 [boolean] [default: false]"
 `;
 
 exports[`kiwii CLI help-text snapshots every documented command emits stable help text: kiwii debug --help 1`] = `
@@ -367,10 +367,10 @@ Options:
                                                                                            [boolean]
       --prompt           prompt to use                                                      [string]
       --agent            agent to use                                                       [string]
-      --permission-mode  permission mode: default, acceptEdits, plan or bypassPermissions
-                           [string] [choices: "default", "acceptEdits", "plan", "bypassPermissions"]
-      --auto             auto-approve permissions that are not explicitly denied (dangerous!)
-                                                                          [boolean] [default: false]
+      --permission-mode  permission mode: default, acceptEdits, plan, auto or bypassPermissions
+                   [string] [choices: "default", "acceptEdits", "plan", "auto", "bypassPermissions"]
+      --auto             alias for --permission-mode auto: approve edits and known-safe commands,
+                         ask for the rest                                 [boolean] [default: false]
       --mini             start the minimal interactive interface          [boolean] [default: false]
       --no-replay        disable mini session history replay on resume and after resize    [boolean]
       --replay-limit     cap visible mini replay to the newest N messages                   [number]
@@ -679,10 +679,10 @@ Options:
                                                                                            [boolean]
       --prompt           prompt to use                                                      [string]
       --agent            agent to use                                                       [string]
-      --permission-mode  permission mode: default, acceptEdits, plan or bypassPermissions
-                           [string] [choices: "default", "acceptEdits", "plan", "bypassPermissions"]
-      --auto             auto-approve permissions that are not explicitly denied (dangerous!)
-                                                                          [boolean] [default: false]
+      --permission-mode  permission mode: default, acceptEdits, plan, auto or bypassPermissions
+                   [string] [choices: "default", "acceptEdits", "plan", "auto", "bypassPermissions"]
+      --auto             alias for --permission-mode auto: approve edits and known-safe commands,
+                         ask for the rest                                 [boolean] [default: false]
       --mini             start the minimal interactive interface          [boolean] [default: false]
       --no-replay        disable mini session history replay on resume and after resize    [boolean]
       --replay-limit     cap visible mini replay to the newest N messages                   [number]
@@ -741,10 +741,10 @@ Options:
                                                                                            [boolean]
       --prompt           prompt to use                                                      [string]
       --agent            agent to use                                                       [string]
-      --permission-mode  permission mode: default, acceptEdits, plan or bypassPermissions
-                           [string] [choices: "default", "acceptEdits", "plan", "bypassPermissions"]
-      --auto             auto-approve permissions that are not explicitly denied (dangerous!)
-                                                                          [boolean] [default: false]
+      --permission-mode  permission mode: default, acceptEdits, plan, auto or bypassPermissions
+                   [string] [choices: "default", "acceptEdits", "plan", "auto", "bypassPermissions"]
+      --auto             alias for --permission-mode auto: approve edits and known-safe commands,
+                         ask for the rest                                 [boolean] [default: false]
       --mini             start the minimal interactive interface          [boolean] [default: false]
       --no-replay        disable mini session history replay on resume and after resize    [boolean]
       --replay-limit     cap visible mini replay to the newest N messages                   [number]

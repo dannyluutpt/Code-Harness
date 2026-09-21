@@ -107,12 +107,12 @@ export const TuiThreadCommand = cmd({
       })
       .option("permission-mode", {
         type: "string",
-        choices: ["default", "acceptEdits", "plan", "bypassPermissions"] as const,
-        describe: "permission mode: default, acceptEdits, plan or bypassPermissions",
+        choices: ["default", "acceptEdits", "plan", "auto", "bypassPermissions"] as const,
+        describe: "permission mode: default, acceptEdits, plan, auto or bypassPermissions",
       })
       .option("auto", {
         type: "boolean",
-        describe: "auto-approve permissions that are not explicitly denied (dangerous!)",
+        describe: "alias for --permission-mode auto: approve edits and known-safe commands, ask for the rest",
         default: false,
       })
       .option("yolo", {
@@ -296,8 +296,8 @@ export const TuiThreadCommand = cmd({
               model: args.model,
               prompt,
               fork: args.fork,
-              auto: args.auto || args.yolo || args["dangerously-skip-permissions"],
-              permissionMode: args["permission-mode"] ?? process.env["KIWII_PERMISSION_MODE"],
+              auto: args.yolo || args["dangerously-skip-permissions"],
+              permissionMode: args["permission-mode"] ?? (args.auto ? "auto" : process.env["KIWII_PERMISSION_MODE"]),
             },
           }),
         )

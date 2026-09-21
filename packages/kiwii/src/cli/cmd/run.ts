@@ -242,12 +242,12 @@ export const RunCommand = effectCmd({
       })
       .option("permission-mode", {
         type: "string",
-        choices: ["default", "acceptEdits", "plan", "bypassPermissions"] as const,
-        describe: "permission mode: default, acceptEdits, plan or bypassPermissions",
+        choices: ["default", "acceptEdits", "plan", "auto", "bypassPermissions"] as const,
+        describe: "permission mode: default, acceptEdits, plan, auto or bypassPermissions",
       })
       .option("auto", {
         type: "boolean",
-        describe: "auto-approve permissions that are not explicitly denied (dangerous!)",
+        describe: "alias for --permission-mode auto: approve edits and known-safe commands, ask for the rest",
         default: false,
       })
       .option("yolo", {
@@ -277,15 +277,17 @@ export const RunCommand = effectCmd({
     yield* Effect.promise(async () => {
       const rawMessage = [...args.message, ...(args["--"] || [])].join(" ")
       const interactive = args.mini
-      const auto = args.auto || args.yolo || args["dangerously-skip-permissions"]
+      const bypass = args.yolo || args["dangerously-skip-permissions"]
       const envMode = process.env["KIWII_PERMISSION_MODE"]
       const explicitMode = ConfigPermissionV1.isMode(args["permission-mode"])
         ? args["permission-mode"]
-        : auto
+        : bypass
           ? "bypassPermissions"
-          : ConfigPermissionV1.isMode(envMode)
-            ? envMode
-            : undefined
+          : args.auto
+            ? "auto"
+            : ConfigPermissionV1.isMode(envMode)
+              ? envMode
+              : undefined
       // Resolved after config loads: explicit flag/env > config.permission_mode > default.
       let mode: ConfigPermissionV1.Mode = explicitMode ?? "default"
       const thinking = interactive ? (args.thinking ?? true) : (args.thinking ?? false)
@@ -820,7 +822,7 @@ export const RunCommand = effectCmd({
               const permission = event.properties
               if (!sessions.has(permission.sessionID)) continue
 
-              if (autoApprove(mode, permission.permission)) {
+              if (autoApprove(mode, permission.permission, permission.patterns)) {
                 await client.permission.reply({
                   requestID: permission.id,
                   reply: "once",
@@ -1035,11 +1037,4 @@ export async function runMini(input: MiniCommandInput) {
   })
 }
 
-const EDIT_PERMISSIONS = new Set(["edit", "write", "apply_patch", "read", "glob", "grep", "list"])
-
-/** Whether a permission request is auto-approved under a Claude Code style permission mode. */
-export function autoApprove(mode: ConfigPermissionV1.Mode, permission: string) {
-  if (mode === "bypassPermissions") return true
-  if (mode === "acceptEdits") return EDIT_PERMISSIONS.has(permission)
-  return false
-}
+export const autoApprove = ConfigPermissionV1.autoApprove

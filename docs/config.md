@@ -20,7 +20,7 @@ Các khoá chính:
 {
   "model": "anthropic/claude-sonnet-5",      // model mặc định
   "small_model": "anthropic/claude-haiku-4-5", // cho tiêu đề, tóm tắt, trích xuất bộ nhớ
-  "permission_mode": "default",             // default | acceptEdits | plan | bypassPermissions
+  "permission_mode": "default",             // default | acceptEdits | plan | auto | bypassPermissions
   "permission": { "bash": { "git *": "allow" } },   // ruleset gốc (sau thắng trước)
   "permissions": { "allow": ["Bash(git *)"], "deny": ["Read(.env)"] }, // cú pháp Claude Code
   "hooks": { /* xem hooks.md */ },

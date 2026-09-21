@@ -44,9 +44,22 @@ describe("ConfigPermissionV1.fromClaudeRules", () => {
 })
 
 describe("ConfigPermissionV1.isMode", () => {
-  test("accepts the four claude code modes", () => {
+  test("accepts the claude code modes", () => {
     for (const mode of ConfigPermissionV1.MODES) expect(ConfigPermissionV1.isMode(mode)).toBe(true)
-    expect(ConfigPermissionV1.isMode("auto")).toBe(false)
+    expect(ConfigPermissionV1.isMode("auto")).toBe(true)
+    expect(ConfigPermissionV1.isMode("yolo")).toBe(false)
     expect(ConfigPermissionV1.isMode(undefined)).toBe(false)
+  })
+})
+
+describe("ConfigPermissionV1.autoApprove", () => {
+  test("auto approves safe shell commands only", () => {
+    expect(ConfigPermissionV1.autoApprove("auto", "bash", ["git status", "rg TODO src"])).toBe(true)
+    expect(ConfigPermissionV1.autoApprove("auto", "bash", ["git status", "rm -rf dist"])).toBe(false)
+    expect(ConfigPermissionV1.autoApprove("auto", "bash", ["ls ; rm -rf x"])).toBe(false)
+    expect(ConfigPermissionV1.autoApprove("auto", "bash", ["echo hi > file"])).toBe(false)
+    expect(ConfigPermissionV1.autoApprove("auto", "bash")).toBe(false)
+    expect(ConfigPermissionV1.autoApprove("auto", "webfetch")).toBe(false)
+    expect(ConfigPermissionV1.autoApprove("default", "edit")).toBe(false)
   })
 })

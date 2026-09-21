@@ -1,5 +1,5 @@
 import { Prompt, type PromptRef } from "../component/prompt"
-import { createEffect, createMemo, createSignal, onMount } from "solid-js"
+import { createEffect, createMemo, createSignal, onMount, Show } from "solid-js"
 import { Logo } from "../component/logo"
 import { useSync } from "../context/sync"
 import { Toast } from "../ui/toast"
@@ -11,7 +11,11 @@ import { usePluginRuntime } from "../plugin/runtime"
 import { useEditorContext } from "../context/editor"
 import { useTerminalDimensions } from "@opentui/solid"
 import { useTuiConfig } from "../config"
-import { HomeSessionDestinationProvider } from "./home/session-destination"
+import { HomeSessionDestinationProvider, useHomeSessionDestination } from "./home/session-destination"
+import { useTheme } from "../context/theme"
+import { useTuiPaths } from "../context/runtime"
+import { abbreviateHome } from "../runtime"
+import { InstallationVersion } from "@kiwii/core/installation/version"
 
 let once = false
 const placeholder = {
@@ -77,6 +81,7 @@ export function Home() {
             <Logo />
           </pluginRuntime.Slot>
         </box>
+        <Info />
         <box height={1} minHeight={0} flexShrink={1} />
         <box width="100%" maxWidth={promptMaxWidth()} zIndex={1000} paddingTop={1} flexShrink={0}>
           <pluginRuntime.Slot name="home_prompt" mode="replace" ref={bind}>
@@ -91,5 +96,37 @@ export function Home() {
         <pluginRuntime.Slot name="home_footer" mode="single_winner" />
       </box>
     </HomeSessionDestinationProvider>
+  )
+}
+
+// Rendered inside HomeSessionDestinationProvider so it follows the selected destination.
+function Info() {
+  const { theme } = useTheme()
+  const sync = useSync()
+  const paths = useTuiPaths()
+  const destination = useHomeSessionDestination()
+  const selected = createMemo(() => {
+    const value = destination?.destination()
+    if (!value || value.type === "new") return
+    return value
+  })
+
+  return (
+    <box flexShrink={0} paddingTop={1}>
+      <text fg={theme.textMuted} wrapMode="none">
+        {InstallationVersion === "local" ? "local" : "v" + InstallationVersion}
+        <Show when={selected()}>
+          {(value) => (
+            <>
+              {" · "}
+              {abbreviateHome(value().directory, paths.home)}
+              <Show when={value().directory === (sync.path.directory || paths.cwd) && sync.data.vcs?.branch}>
+                <span style={{ fg: theme.secondary }}> ⎇ {sync.data.vcs!.branch}</span>
+              </Show>
+            </>
+          )}
+        </Show>
+      </text>
+    </box>
   )
 }

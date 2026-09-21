@@ -560,6 +560,7 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
         <box flexDirection="row" justifyContent="space-between">
           {props.titleView ?? (
             <text fg={theme.text} attributes={TextAttributes.BOLD}>
+              <span style={{ fg: theme.secondary }}>● </span>
               {props.title}
             </text>
           )}
@@ -568,8 +569,12 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
           </text>
         </box>
         <Show when={props.renderFilter !== false}>
-          <box paddingTop={1}>
+          <box paddingTop={1} flexDirection="row" gap={1}>
+            <text fg={theme.primary} flexShrink={0} selectable={false}>
+              ❯
+            </text>
             <input
+              flexGrow={1}
               onInput={(e) => {
                 if (props.locked) return
                 batch(() => {
@@ -623,7 +628,7 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
                       <Show
                         when={options[0]?.categoryView}
                         fallback={
-                          <text fg={theme.accent} attributes={TextAttributes.BOLD}>
+                          <text fg={theme.secondary} attributes={TextAttributes.BOLD}>
                             {category}
                           </text>
                         }
@@ -775,8 +780,8 @@ function Option(props: {
           (props.truncateTitle === false
             ? props.title
             : props.truncateTitle === "left"
-              ? Locale.truncateLeft(props.title, props.titleWidth ?? 61)
-              : Locale.truncate(props.title, props.titleWidth ?? 61))}
+              ? Locale.truncateLeft(props.title, props.titleWidth ?? 59)
+              : Locale.truncate(props.title, props.titleWidth ?? 59))}
         <Show when={props.description}>
           <span style={{ fg: props.active && !props.muted ? fg : theme.textMuted }}> {props.description}</span>
         </Show>
