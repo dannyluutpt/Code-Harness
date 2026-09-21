@@ -1,6 +1,7 @@
 import type { Hooks, Plugin, PluginInput } from "@kiwii/plugin"
 import type { ConfigHooksV1 } from "@kiwii/core/v1/config/hooks"
 import { Wildcard } from "@kiwii/core/util/wildcard"
+import { Shell } from "@kiwii/core/shell"
 
 const DEFAULT_TIMEOUT_SECONDS = 60
 
@@ -46,7 +47,8 @@ type Runner = (
 export function runCommand(cwd: string, env: Record<string, string>): Runner {
   return async (command, payload) => {
     const timeout = (command.timeout ?? DEFAULT_TIMEOUT_SECONDS) * 1000
-    const shell = process.platform === "win32" ? ["cmd", "/c", command.command] : ["sh", "-c", command.command]
+    const shell =
+      process.platform === "win32" ? ["cmd", "/c", Shell.utf8("cmd", command.command)] : ["sh", "-c", command.command]
     const proc = Bun.spawn(shell, {
       cwd,
       env: { ...process.env, ...env, KIWII_PROJECT_DIR: cwd },

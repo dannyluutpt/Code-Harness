@@ -163,6 +163,21 @@ function info(file: string): Item {
   }
 }
 
+// Windows shells write to pipes using the OEM code page, which turns non-ASCII output (Vietnamese, CJK,
+// emoji) into "?" before it ever reaches Kiwii. Force UTF-8 for the command's own output and for what it
+// reads back from native programs.
+// The [Console] setters need a console handle; wrap them so a headless `kiwii serve` still runs the command.
+const PS_UTF8 =
+  "try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::InputEncoding = [System.Text.Encoding]::UTF8 } catch {}; $OutputEncoding = [System.Text.Encoding]::UTF8; "
+const CMD_UTF8 = "chcp 65001>nul & "
+
+export function utf8(file: string, command: string) {
+  if (process.platform !== "win32") return command
+  if (ps(file)) return PS_UTF8 + command
+  if (name(file) === "cmd") return CMD_UTF8 + command
+  return command
+}
+
 export function args(file: string, command: string, cwd: string) {
   const n = name(file)
   if (n === "nu" || n === "fish") return ["-c", command]
@@ -194,8 +209,8 @@ export function args(file: string, command: string, cwd: string) {
       cwd,
     ]
   }
-  if (n === "cmd") return ["/c", command]
-  if (ps(file)) return ["-NoProfile", "-Command", command]
+  if (n === "cmd") return ["/c", utf8(file, command)]
+  if (ps(file)) return ["-NoProfile", "-Command", utf8(file, command)]
   return ["-c", command]
 }
 
