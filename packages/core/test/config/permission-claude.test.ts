@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test"
+import { Schema } from "effect"
 import { ConfigPermissionV1 } from "../../src/v1/config/permission"
 
 describe("ConfigPermissionV1.parseClaudeRule", () => {
@@ -61,5 +62,13 @@ describe("ConfigPermissionV1.autoApprove", () => {
     expect(ConfigPermissionV1.autoApprove("auto", "bash")).toBe(false)
     expect(ConfigPermissionV1.autoApprove("auto", "webfetch")).toBe(false)
     expect(ConfigPermissionV1.autoApprove("default", "edit")).toBe(false)
+  })
+})
+
+describe("ConfigPermissionV1.Info", () => {
+  test("accepts the pattern rules Claude Code style entries produce for web tools", () => {
+    const rules = ConfigPermissionV1.fromClaudeRules({ allow: ["WebSearch", "WebFetch(domain:docs.bun.sh)"] })
+    expect(rules).toEqual({ websearch: { "*": "allow" }, webfetch: { "*docs.bun.sh*": "allow" } })
+    expect(Schema.decodeUnknownSync(ConfigPermissionV1.Info)(rules)).toEqual(rules)
   })
 })

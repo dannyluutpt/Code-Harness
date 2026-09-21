@@ -26,8 +26,9 @@ const InputObject = Schema.StructWithRest(
     external_directory: Schema.optional(Rule),
     todowrite: Schema.optional(Action),
     question: Schema.optional(Action),
-    webfetch: Schema.optional(Action),
-    websearch: Schema.optional(Action),
+    // Patterns matter here: Claude Code rules such as `WebFetch(domain:docs.bun.sh)` become `{ "*docs.bun.sh*": … }`.
+    webfetch: Schema.optional(Rule),
+    websearch: Schema.optional(Rule),
     lsp: Schema.optional(Rule),
     doom_loop: Schema.optional(Action),
     skill: Schema.optional(Rule),
