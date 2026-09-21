@@ -74,7 +74,7 @@ import { useTuiConfig } from "../../config"
 import { useClipboard } from "../../context/clipboard"
 import { nextThinkingMode, reasoningSummary, useThinkingMode, type ThinkingMode } from "../../context/thinking"
 import { getScrollAcceleration } from "../../util/scroll"
-import { money, sessionUsage } from "../../util/usage"
+import { money, sessionUsage, speedLabel, turnSpeed } from "../../util/usage"
 import { collapseToolOutput } from "../../util/collapse-tool-output"
 import { usePluginRuntime } from "../../plugin/runtime"
 import { DialogRetryAction } from "../../component/dialog-retry-action"
@@ -1541,6 +1541,19 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
     return props.message.time.completed - user.time.created
   })
 
+  // Every assistant message of a turn shares the user message as its parent, so the speed covers
+  // the whole reply the way the duration next to it does, not just the last provider step.
+  const speed = createMemo(() => {
+    if (!final()) return
+    return turnSpeed(
+      messages()
+        .filter(
+          (item): item is AssistantMessage => item.role === "assistant" && item.parentID === props.message.parentID,
+        )
+        .map((message) => ({ message, parts: sync.data.part[message.id] ?? [] })),
+    )
+  })
+
   const childShortcut = useCommandShortcut("session.child.first")
   const backgroundShortcut = useCommandShortcut("session.background")
 
@@ -1618,6 +1631,9 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
               <span style={{ fg: theme.textMuted }}> · {model()}</span>
               <Show when={duration()}>
                 <span style={{ fg: theme.textMuted }}> · {Locale.duration(duration())}</span>
+              </Show>
+              <Show when={speed()}>
+                <span style={{ fg: theme.textMuted }}> · {speedLabel(speed()!)}</span>
               </Show>
               <Show when={props.message.error?.name === "MessageAbortedError"}>
                 <span style={{ fg: theme.textMuted }}> · interrupted</span>
