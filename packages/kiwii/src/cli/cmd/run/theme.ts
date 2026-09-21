@@ -69,6 +69,23 @@ export type RunTheme = {
 }
 
 type ThemeColor = Exclude<keyof TuiThemeCurrent, "thinkingOpacity">
+
+type PermissionColor =
+  | "permissionDefault"
+  | "permissionAuto"
+  | "permissionAcceptEdits"
+  | "permissionPlan"
+  | "permissionBypass"
+
+// Run mode resolves its own theme to stay off the TUI's startup path, so it carries a copy of the
+// accents that `packages/tui/src/theme/index.ts` owns. Keep the two in step.
+const PERMISSION_COLORS: Record<PermissionColor, HexColor> = {
+  permissionDefault: "#3ecf5b",
+  permissionAuto: "#ff8c2b",
+  permissionAcceptEdits: "#f2c53d",
+  permissionPlan: "#4d9fff",
+  permissionBypass: "#ff4d4f",
+}
 type HexColor = `#${string}`
 type RefName = string
 type Variant = {
@@ -78,11 +95,11 @@ type Variant = {
 type ColorValue = HexColor | RefName | Variant | RGBA | number
 type ThemeJson = {
   defs?: Record<string, HexColor | RefName>
-  theme: Omit<Record<ThemeColor, ColorValue>, "selectedListItemText" | "backgroundMenu"> & {
+  theme: Omit<Record<ThemeColor, ColorValue>, "selectedListItemText" | "backgroundMenu" | PermissionColor> & {
     selectedListItemText?: ColorValue
     backgroundMenu?: ColorValue
     thinkingOpacity?: number
-  }
+  } & Partial<Record<PermissionColor, ColorValue>>
 }
 
 type SharedSyntaxTheme = TuiThemeCurrent & {
@@ -321,6 +338,11 @@ export function resolveTheme(theme: ThemeJson, pick: "dark" | "light"): TuiTheme
         : resolveColor(theme.theme.selectedListItemText),
     backgroundMenu:
       theme.theme.backgroundMenu === undefined ? resolved.backgroundElement! : resolveColor(theme.theme.backgroundMenu),
+    permissionDefault: resolved.permissionDefault ?? RGBA.fromHex(PERMISSION_COLORS.permissionDefault),
+    permissionAuto: resolved.permissionAuto ?? RGBA.fromHex(PERMISSION_COLORS.permissionAuto),
+    permissionAcceptEdits: resolved.permissionAcceptEdits ?? RGBA.fromHex(PERMISSION_COLORS.permissionAcceptEdits),
+    permissionPlan: resolved.permissionPlan ?? RGBA.fromHex(PERMISSION_COLORS.permissionPlan),
+    permissionBypass: resolved.permissionBypass ?? RGBA.fromHex(PERMISSION_COLORS.permissionBypass),
     thinkingOpacity: theme.theme.thinkingOpacity ?? 0.6,
   }
 }

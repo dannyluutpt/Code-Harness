@@ -308,6 +308,11 @@ export type TuiThemeCurrent = {
   readonly warning: RGBA
   readonly success: RGBA
   readonly info: RGBA
+  readonly permissionDefault: RGBA
+  readonly permissionAuto: RGBA
+  readonly permissionAcceptEdits: RGBA
+  readonly permissionPlan: RGBA
+  readonly permissionBypass: RGBA
   readonly text: RGBA
   readonly textMuted: RGBA
   readonly selectedListItemText: RGBA
