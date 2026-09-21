@@ -41,6 +41,11 @@ export type Theme = {
   readonly warning: RGBA
   readonly success: RGBA
   readonly info: RGBA
+  readonly permissionDefault: RGBA
+  readonly permissionAuto: RGBA
+  readonly permissionAcceptEdits: RGBA
+  readonly permissionPlan: RGBA
+  readonly permissionBypass: RGBA
   readonly text: RGBA
   readonly textMuted: RGBA
   readonly selectedListItemText: RGBA
@@ -90,6 +95,25 @@ export type Theme = {
   _hasSelectedListItemText: boolean
 }
 type ThemeColor = Exclude<keyof Theme, "thinkingOpacity" | "_hasSelectedListItemText">
+
+/** One accent per permission mode, so the prompt border says which mode is live. */
+export type PermissionColor =
+  | "permissionDefault"
+  | "permissionAuto"
+  | "permissionAcceptEdits"
+  | "permissionPlan"
+  | "permissionBypass"
+
+// Fixed mid-tone accents rather than the terminal's ANSI ramp: the dim ANSI slots are unreadable as a
+// one-cell border on a dark background, and the mode has to be recognisable at a glance in every theme.
+// A theme that wants its own ramp overrides these keys.
+export const PERMISSION_COLORS: Record<PermissionColor, string> = {
+  permissionDefault: "#3ecf5b",
+  permissionAuto: "#ff8c2b",
+  permissionAcceptEdits: "#f2c53d",
+  permissionPlan: "#4d9fff",
+  permissionBypass: "#ff4d4f",
+}
 export type SyntaxStyleOverrides = Record<string, { italic?: boolean }>
 
 export function selectedForeground(theme: Theme, bg?: RGBA): RGBA {
@@ -120,11 +144,11 @@ type ColorValue = HexColor | RefName | Variant | RGBA
 export type ThemeJson = {
   $schema?: string
   defs?: Record<string, HexColor | RefName>
-  theme: Omit<Record<ThemeColor, ColorValue>, "selectedListItemText" | "backgroundMenu"> & {
+  theme: Omit<Record<ThemeColor, ColorValue>, "selectedListItemText" | "backgroundMenu" | PermissionColor> & {
     selectedListItemText?: ColorValue
     backgroundMenu?: ColorValue
     thinkingOpacity?: number
-  }
+  } & Partial<Record<PermissionColor, ColorValue>>
 }
 
 export const DEFAULT_THEMES: Record<string, ThemeJson> = {
@@ -288,6 +312,12 @@ export function resolveTheme(theme: ThemeJson, mode: "dark" | "light") {
     resolved.backgroundMenu = resolved.backgroundElement
   }
 
+  // Permission accents are optional. Fall back to the terminal's own ANSI ramp so every
+  // theme gets a distinguishable red/orange/yellow/blue/green without having to define them.
+  for (const key of Object.keys(PERMISSION_COLORS) as PermissionColor[]) {
+    if (resolved[key] === undefined) resolved[key] = RGBA.fromHex(PERMISSION_COLORS[key])
+  }
+
   // Handle thinkingOpacity - optional with default of 0.6
   const thinkingOpacity = theme.theme.thinkingOpacity ?? 0.6
 
@@ -407,6 +437,13 @@ export function generateSystem(colors: TerminalColors, mode: "dark" | "light"): 
       warning: ansiColors.yellow,
       success: ansiColors.green,
       info: ansiColors.cyan,
+
+      // Permission mode accents
+      permissionDefault: RGBA.fromHex(PERMISSION_COLORS.permissionDefault),
+      permissionAuto: RGBA.fromHex(PERMISSION_COLORS.permissionAuto),
+      permissionAcceptEdits: RGBA.fromHex(PERMISSION_COLORS.permissionAcceptEdits),
+      permissionPlan: RGBA.fromHex(PERMISSION_COLORS.permissionPlan),
+      permissionBypass: RGBA.fromHex(PERMISSION_COLORS.permissionBypass),
 
       // Text colors
       text: fg,

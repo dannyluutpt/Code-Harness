@@ -2,7 +2,15 @@ import { expect, test } from "bun:test"
 import { mkdir, writeFile } from "node:fs/promises"
 import path from "node:path"
 import type { TerminalColors } from "@opentui/core"
-import { DEFAULT_THEMES, addTheme, allThemes, hasTheme, resolveTheme, terminalMode } from "../src/theme"
+import {
+  DEFAULT_THEMES,
+  PERMISSION_COLORS,
+  addTheme,
+  allThemes,
+  hasTheme,
+  resolveTheme,
+  terminalMode,
+} from "../src/theme"
 import { discoverThemes } from "../src/context/theme"
 import { tmpdir } from "./fixture/fixture"
 
@@ -78,4 +86,32 @@ test("custom theme precedence follows directory order", async () => {
   await writeFile(path.join(project, "themes", "custom.json"), JSON.stringify({ source: "project" }))
 
   await expect(discoverThemes([global, project])).resolves.toEqual({ custom: { source: "project" } })
+})
+
+function hex(color: { r: number; g: number; b: number }) {
+  const part = (value: number) =>
+    Math.round(value * 255)
+      .toString(16)
+      .padStart(2, "0")
+  return `#${part(color.r)}${part(color.g)}${part(color.b)}`
+}
+
+test("resolveTheme fills permission accents and keeps them distinct", () => {
+  const theme = resolveTheme(structuredClone(DEFAULT_THEMES.kiwii), "dark")
+  const accents = [
+    theme.permissionDefault,
+    theme.permissionAuto,
+    theme.permissionAcceptEdits,
+    theme.permissionPlan,
+    theme.permissionBypass,
+  ]
+  expect(hex(theme.permissionBypass)).toBe(PERMISSION_COLORS.permissionBypass)
+  expect(hex(theme.permissionPlan)).toBe(PERMISSION_COLORS.permissionPlan)
+  expect(new Set(accents.map(hex)).size).toBe(5)
+})
+
+test("a theme can override a permission accent", () => {
+  const item = structuredClone(DEFAULT_THEMES.kiwii)
+  item.theme.permissionPlan = "#123456"
+  expect(hex(resolveTheme(item, "dark").permissionPlan)).toBe("#123456")
 })
