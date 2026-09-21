@@ -68,6 +68,9 @@ done
 INSTALL_DIR=$HOME/.kiwii/bin
 mkdir -p "$INSTALL_DIR"
 
+# Windows archives carry kiwii.exe; everything else ships a bare kiwii.
+binary_name="$APP"
+
 # If --binary is provided, skip all download/detection logic
 if [ -n "$binary_path" ]; then
     if [ ! -f "$binary_path" ]; then
@@ -158,6 +161,9 @@ else
     fi
 
     target="$os-$arch"
+    if [ "$os" = "windows" ]; then
+        binary_name="$APP.exe"
+    fi
     if [ "$needs_baseline" = "true" ]; then
       target="$target-baseline"
     fi
@@ -340,15 +346,18 @@ download_and_install() {
         unzip -q "$tmp_dir/$filename" -d "$tmp_dir"
     fi
 
-    mv "$tmp_dir/kiwii" "$INSTALL_DIR"
-    chmod 755 "${INSTALL_DIR}/kiwii"
+    mv "$tmp_dir/$binary_name" "${INSTALL_DIR}/${binary_name}"
+    chmod 755 "${INSTALL_DIR}/${binary_name}"
     rm -rf "$tmp_dir"
 }
 
 install_from_binary() {
     print_message info "\n${MUTED}Installing ${NC}kiwii ${MUTED}from: ${NC}$binary_path"
-    cp "$binary_path" "${INSTALL_DIR}/kiwii"
-    chmod 755 "${INSTALL_DIR}/kiwii"
+    case "$binary_path" in
+        *.exe) binary_name="$APP.exe" ;;
+    esac
+    cp "$binary_path" "${INSTALL_DIR}/${binary_name}"
+    chmod 755 "${INSTALL_DIR}/${binary_name}"
 }
 
 if [ -n "$binary_path" ]; then

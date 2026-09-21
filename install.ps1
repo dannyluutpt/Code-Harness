@@ -1,4 +1,3 @@
-#Requires -Version 5.1
 <#
 .SYNOPSIS
   Kiwii installer for Windows (PowerShell).
@@ -8,9 +7,13 @@
 .EXAMPLE
   irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
 .EXAMPLE
-  $env:VERSION = "0.1.1"; irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
+  $env:VERSION = "0.3.0"; irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
 #>
 $ErrorActionPreference = "Stop"
+
+if ($PSVersionTable.PSVersion.Major -lt 5) {
+  throw "Kiwii needs Windows PowerShell 5.1 or newer; this is $($PSVersionTable.PSVersion)."
+}
 
 $app = "kiwii"
 $repo = "dannyluutpt/Code-Harness"

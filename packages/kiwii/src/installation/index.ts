@@ -136,20 +136,32 @@ const layer: Layer.Layer<Service, never, HttpClient.HttpClient | AppProcess.Serv
       return `Upgrade failed for ${method}.`
     }
 
+    // Windows upgrades run install.ps1 through PowerShell. Piping the bash installer into a bash that
+    // happens to be on PATH lands the install inside WSL or Git Bash and leaves the kiwii.exe that is
+    // actually on PATH untouched, which reads as a successful upgrade that changed nothing.
     const upgradeScriptShell = Effect.fnUntraced(function* () {
+      if (process.platform === "win32") {
+        const pwsh = yield* text(["pwsh", "-NoProfile", "-NonInteractive", "-Command", "$PSVersionTable.PSVersion"])
+        return {
+          file: pwsh ? "pwsh" : "powershell.exe",
+          args: ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", "-"],
+          script: "install.ps1",
+        }
+      }
       const bashVersion = yield* text(["bash", "--version"])
-      if (bashVersion) return "bash"
-      return "sh"
+      return { file: bashVersion ? "bash" : "sh", args: [] as string[], script: "install" }
     })
 
     const upgradeCurl = Effect.fnUntraced(
       function* (target: string) {
-        const response = yield* httpOk.execute(HttpClientRequest.get("https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install"))
+        const shell = yield* upgradeScriptShell()
+        const response = yield* httpOk.execute(
+          HttpClientRequest.get(`https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/${shell.script}`),
+        )
         const body = yield* response.text
         const bodyBytes = new TextEncoder().encode(body)
-        const shell = yield* upgradeScriptShell()
         const result = yield* appProcess.run(
-          ChildProcess.make(shell, [], {
+          ChildProcess.make(shell.file, shell.args, {
             stdin: Stream.make(bodyBytes),
             env: { VERSION: target },
             extendEnv: true,
@@ -216,9 +228,7 @@ const layer: Layer.Layer<Service, never, HttpClient.HttpClient | AppProcess.Serv
             return info.formulae[0].versions.stable
           }
           const response = yield* httpOk.execute(
-            HttpClientRequest.get("https://formulae.brew.sh/api/formula/kiwii.json").pipe(
-              HttpClientRequest.acceptJson,
-            ),
+            HttpClientRequest.get("https://formulae.brew.sh/api/formula/kiwii.json").pipe(HttpClientRequest.acceptJson),
           )
           const data = yield* HttpClientResponse.schemaBodyJson(BrewFormula)(response)
           return data.versions.stable
@@ -226,9 +236,9 @@ const layer: Layer.Layer<Service, never, HttpClient.HttpClient | AppProcess.Serv
 
         if (detectedMethod === "npm" || detectedMethod === "bun" || detectedMethod === "pnpm") {
           const response = yield* httpOk.execute(
-            HttpClientRequest.get(
-              `${yield* NpmConfig.registry(process.cwd())}/kiwii-ai/${InstallationChannel}`,
-            ).pipe(HttpClientRequest.acceptJson),
+            HttpClientRequest.get(`${yield* NpmConfig.registry(process.cwd())}/kiwii-ai/${InstallationChannel}`).pipe(
+              HttpClientRequest.acceptJson,
+            ),
           )
           const data = yield* HttpClientResponse.schemaBodyJson(NpmPackage)(response)
           return data.version
