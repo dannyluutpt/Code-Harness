@@ -43,6 +43,36 @@
       ],
       "outputs": []
     },
+    "@kiwii/tui#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@kiwii/llm#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@kiwii/codemode#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@kiwii/schema#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@kiwii/protocol#test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
     "@kiwii/session-ui#test": {
       "dependsOn": [
         "^build"

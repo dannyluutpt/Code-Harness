@@ -1844,6 +1844,9 @@ unix(
   30_000,
 )
 
+// The shell-cancellation tests below block on `sleep 30` and assert that cancel resolves long before
+// it ends. Their deadline has to stay well above that sleep: at 30s a cancel that stalls raced the
+// command's natural end instead of failing, which showed up on CI as a 30005ms timeout.
 unixNoLLMServer(
   "cancel interrupts shell and resolves cleanly",
   () =>
@@ -1881,7 +1884,7 @@ unixNoLLMServer(
       }),
     ),
   { git: true, config: cfg },
-  30_000,
+  60_000,
 )
 
 unixNoLLMServer(
@@ -1925,7 +1928,7 @@ unixNoLLMServer(
       }),
     ),
   { git: true, config: cfg },
-  30_000,
+  60_000,
 )
 
 unix(
@@ -1981,7 +1984,7 @@ unix(
       expect(tool.state.output).not.toContain("Tool execution aborted")
     }),
   { git: true },
-  30_000,
+  60_000,
 )
 
 unixNoLLMServer(
@@ -2008,7 +2011,7 @@ unixNoLLMServer(
       yield* Fiber.await(sh)
     }),
   { git: true, config: cfg },
-  30_000,
+  60_000,
 )
 
 unixNoLLMServer(
@@ -2034,7 +2037,7 @@ unixNoLLMServer(
       }),
     ),
   { git: true, config: cfg },
-  30_000,
+  60_000,
 )
 
 // Abort signal propagation tests for inline tool execution
