@@ -7,7 +7,6 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { Filesystem } from "@/util/filesystem"
-import { Process } from "@/util/process"
 
 interface UninstallArgs {
   keepConfig: boolean
@@ -58,11 +57,12 @@ export const UninstallCommand = {
     prompts.intro("Uninstall Kiwii")
 
     const method = await Installation.method()
-    prompts.log.info(`Installation method: ${method}`)
+    if (method === "unknown")
+      prompts.log.warn(`kiwii at ${process.execPath} was not installed by the kiwii installer, so it is left in place`)
 
     const targets = await collectRemovalTargets(args, method)
 
-    await showRemovalSummary(targets, method)
+    await showRemovalSummary(targets)
 
     if (!args.force && !args.dryRun) {
       const confirm = await prompts.confirm({
@@ -101,7 +101,7 @@ async function collectRemovalTargets(args: UninstallArgs, method: Installation.M
   return { directories, shellConfig, binary }
 }
 
-async function showRemovalSummary(targets: RemovalTargets, method: Installation.Method) {
+async function showRemovalSummary(targets: RemovalTargets) {
   prompts.log.message("The following will be removed:")
 
   for (const dir of targets.directories) {
@@ -125,19 +125,6 @@ async function showRemovalSummary(targets: RemovalTargets, method: Installation.
 
   if (targets.shellConfig) {
     prompts.log.info(`  ✓ Shell PATH in ${shortenPath(targets.shellConfig)}`)
-  }
-
-  if (method !== "curl" && method !== "unknown") {
-    const cmds: Record<string, string> = {
-      npm: "npm uninstall -g kiwii-ai",
-      pnpm: "pnpm uninstall -g kiwii-ai",
-      bun: "bun remove -g kiwii-ai",
-      yarn: "yarn global remove kiwii-ai",
-      brew: "brew uninstall kiwii",
-      choco: "choco uninstall kiwii",
-      scoop: "scoop uninstall kiwii",
-    }
-    prompts.log.info(`  ✓ Package: ${cmds[method] || method}`)
   }
 }
 
@@ -175,37 +162,6 @@ async function executeUninstall(method: Installation.Method, targets: RemovalTar
       errors.push(`Shell config: ${err.message}`)
     } else {
       spinner.stop("Cleaned shell config")
-    }
-  }
-
-  if (method !== "curl" && method !== "unknown") {
-    const cmds: Record<string, string[]> = {
-      npm: ["npm", "uninstall", "-g", "kiwii-ai"],
-      pnpm: ["pnpm", "uninstall", "-g", "kiwii-ai"],
-      bun: ["bun", "remove", "-g", "kiwii-ai"],
-      yarn: ["yarn", "global", "remove", "kiwii-ai"],
-      brew: ["brew", "uninstall", "kiwii"],
-      choco: ["choco", "uninstall", "kiwii"],
-      scoop: ["scoop", "uninstall", "kiwii"],
-    }
-
-    const cmd = cmds[method]
-    if (cmd) {
-      spinner.start(`Running ${cmd.join(" ")}...`)
-      const result = await Process.run(method === "choco" ? ["choco", "uninstall", "kiwii", "-y", "-r"] : cmd, {
-        nothrow: true,
-      })
-      if (result.code !== 0) {
-        spinner.stop(`Package manager uninstall failed: exit code ${result.code}`, 1)
-        const text = `${result.stdout.toString("utf8")}\n${result.stderr.toString("utf8")}`
-        if (method === "choco" && text.includes("not running from an elevated command shell")) {
-          prompts.log.warn(`You may need to run '${cmd.join(" ")}' from an elevated command shell`)
-        } else {
-          prompts.log.warn(`You may need to run manually: ${cmd.join(" ")}`)
-        }
-      } else {
-        spinner.stop("Package removed")
-      }
     }
   }
 

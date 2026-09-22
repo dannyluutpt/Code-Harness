@@ -28,7 +28,8 @@ bun install
 bun run --cwd packages/kiwii build -- --single   # binary tại packages/kiwii/dist/kiwii-<os>-<arch>/bin/kiwii
 ```
 
-**Nâng cấp:** `kiwii upgrade` (hoặc chạy lại script cài).
+**Nâng cấp:** `kiwii upgrade` (hoặc chạy lại script cài). Lệnh này chỉ tự thay được binary do script cài đặt ghi ra
+(`~/.kiwii/bin` hoặc `~/.local/bin`); nếu bạn tự chép `kiwii` đi chỗ khác, Kiwii sẽ báo rõ và bạn cần chạy lại script cài.
 
 **Gỡ:** `kiwii uninstall` xoá binary và dữ liệu trong `~/.local/share/kiwii`, `~/.config/kiwii`.
 
@@ -54,4 +55,6 @@ Downloads `kiwii-windows-<arch>.zip` into `%USERPROFILE%\.kiwii\bin` and adds it
 
 **From source:** requires Bun 1.3.14. `bun install && bun run --cwd packages/kiwii build -- --single`.
 
-**Upgrade:** `kiwii upgrade`. **Uninstall:** `kiwii uninstall`.
+**Upgrade:** `kiwii upgrade`. It can only replace a binary an installer wrote (`~/.kiwii/bin` or
+`~/.local/bin`); a copy you moved elsewhere is reported as such instead of being silently left stale.
+**Uninstall:** `kiwii uninstall`.
