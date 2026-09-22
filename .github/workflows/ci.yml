@@ -56,3 +56,44 @@ jobs:
       - name: session-ui
         run: bun test src --only-failures
         working-directory: packages/session-ui
+      - name: app
+        run: bun run test:unit && bun run test:browser
+        working-directory: packages/app
+      - name: llm
+        run: bun test --timeout 30000 --only-failures
+        working-directory: packages/llm
+      - name: codemode
+        run: bun test --only-failures
+        working-directory: packages/codemode
+      - name: schema
+        run: bun test --only-failures
+        working-directory: packages/schema
+      - name: protocol
+        run: bun test --only-failures
+        working-directory: packages/protocol
+
+  # Two Windows bugs shipped in a row because nothing ran there: PowerShell wrote non-ASCII output as
+  # "?", and the installer looked for a binary without the .exe suffix. This job covers both shapes.
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - name: core
+        run: bun test --timeout 30000 --only-failures
+        working-directory: packages/core
+      # install.ps1 pulls the published release, so this checks the installer itself rather than the
+      # code under review: the file it writes has to be the kiwii.exe that Windows PATH resolves.
+      - name: install.ps1
+        shell: pwsh
+        env:
+          KIWII_NO_MODIFY_PATH: "1"
+        run: |
+          ./install.ps1
+          $exe = Join-Path $env:USERPROFILE ".kiwii\bin\kiwii.exe"
+          if (-not (Test-Path $exe)) { throw "installer did not write $exe" }
+          & $exe --version

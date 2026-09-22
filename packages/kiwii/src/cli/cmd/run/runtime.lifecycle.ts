@@ -14,6 +14,7 @@ import { createDefaultOpenTuiKeymap } from "@opentui/keymap/opentui"
 import { Global } from "@kiwii/core/global"
 import { openEditor } from "@kiwii/tui/editor"
 import { registerKiwiiKeymap } from "@kiwii/tui/keymap"
+import { installTerminalReset } from "@kiwii/tui/util/terminal-reset"
 import { Session as SessionApi } from "@/session/session"
 import * as Locale from "@/util/locale"
 import { resolveInteractiveStdin } from "./runtime.stdin"
@@ -176,6 +177,9 @@ function queueSplash(
 export async function createRuntimeLifecycle(input: LifecycleInput): Promise<Lifecycle> {
   const source = resolveInteractiveStdin()
   let unregisterKeymap: (() => void) | undefined
+  // Kitty keyboard flags outlive a hard kill, so a SIGTERM that never reaches the teardown below
+  // would leave the shell printing key reports at its prompt.
+  const uninstallTerminalReset = installTerminalReset()
 
   try {
     const renderer = await createCliRenderer({
@@ -342,6 +346,7 @@ export async function createRuntimeLifecycle(input: LifecycleInput): Promise<Lif
         await footer.idle().catch(() => {})
         footer.destroy()
         unregisterKeymap?.()
+        uninstallTerminalReset()
         shutdown(renderer)
         if (!wroteExit) {
           process.stdout.write("\n")
@@ -400,6 +405,7 @@ export async function createRuntimeLifecycle(input: LifecycleInput): Promise<Lif
     }
   } catch (error) {
     unregisterKeymap?.()
+    uninstallTerminalReset()
     source.cleanup?.()
     throw error
   }

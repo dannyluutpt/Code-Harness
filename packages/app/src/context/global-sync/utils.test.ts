@@ -1,10 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import type {
-  AgentListOutput,
-  ModelDefaultOutput,
-  ModelListOutput,
-  ProviderListOutput,
-} from "@kiwii/client/promise"
+import type { AgentListOutput, ModelDefaultOutput, ModelListOutput, ProviderListOutput } from "@kiwii/client/promise"
 import { directoryKey, normalizeAgentList, normalizePermissionRequest, normalizeProviderList } from "./utils"
 
 describe("normalizeAgentList", () => {
@@ -122,8 +117,8 @@ describe("normalizeProviderList", () => {
 
 describe("directoryKey", () => {
   test("normalizes slashes", () => {
-    expect(String(directoryKey("C:\\Repos\\sst\\kiwii"))).toBe("C:/Repos/dannyluutpt/Code-Harness")
-    expect(String(directoryKey("C:/Repos/dannyluutpt/Code-Harness"))).toBe("C:/Repos/dannyluutpt/Code-Harness")
+    expect(String(directoryKey("C:\\Repos\\acme\\app"))).toBe("C:/Repos/acme/app")
+    expect(String(directoryKey("C:/Repos/acme/app"))).toBe("C:/Repos/acme/app")
   })
 
   test("preserves backslashes in posix paths", () => {
