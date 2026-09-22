@@ -1,0 +1,10 @@
+{
+  // Kiwii's landing page, served as an assets-only Worker: no `main`, so there is
+  // no script to run and every request is answered straight from ./site.
+  // Deploy with `bunx wrangler@latest deploy` from the repo root.
+  "name": "kiwii-site",
+  "compatibility_date": "2026-09-22",
+  "assets": {
+    "directory": "./site",
+  },
+}
