@@ -39,6 +39,8 @@ export type PromptInputV2Props = {
   disabled?: boolean
   readOnly?: boolean
   borderUnderlay?: boolean
+  /** CSS colour for the composer outline, e.g. the app's permission mode accent. */
+  accent?: string
   class?: string
   modelControl?: JSX.Element
   variantControlVisible?: boolean
@@ -113,9 +115,12 @@ export function PromptInputV2(props: PromptInputV2Props) {
         data-component="prompt-input-v2"
         data-dock-border-underlay={props.borderUnderlay ? "v2" : undefined}
         class="group/prompt-input relative min-h-[96px] w-full overflow-clip rounded-xl bg-v2-background-bg-base"
+        style={props.accent ? { "--prompt-input-accent": props.accent } : undefined}
         classList={{
           "shadow-[var(--v2-elevation-raised)]": !props.borderUnderlay,
           "border border-v2-icon-icon-info border-dashed": state.drag === "active",
+          // Drag already owns the border, so the accent only shows while nothing is being dropped.
+          "ring-1 ring-[var(--prompt-input-accent)]": !!props.accent && state.drag !== "active",
         }}
         onSubmit={(event) => {
           event.preventDefault()
