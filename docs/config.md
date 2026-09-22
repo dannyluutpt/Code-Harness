@@ -36,6 +36,16 @@ Các khoá chính:
 }
 ```
 
+### Ổn định cấu hình
+
+Từ 1.0.0 trở đi, `kiwii.json` được đóng băng theo semver:
+
+- **Thêm khoá mới** là bản minor. Cấu hình cũ vẫn chạy nguyên vẹn.
+- **Xoá hoặc đổi tên khoá, đổi kiểu dữ liệu, đổi ý nghĩa mặc định** là thay đổi phá vỡ và chỉ ra ở bản major.
+- Khoá nằm trong `experimental` không thuộc cam kết này và có thể đổi bất cứ lúc nào.
+
+Bộ khoá cấp cao nhất được ghim trong `packages/kiwii/test/config/schema-stability.test.ts`; test đó đỏ nghĩa là bạn đang chạm vào một thay đổi phá vỡ, hãy cân nhắc trước khi sửa danh sách.
+
 ## English
 
 Configuration is merged in this order (later wins): global `~/.config/kiwii/kiwii.json` and `~/.kiwii/`, `KIWII_CONFIG`, project `kiwii.json` files walking up to the repo root, the project `.kiwii/` directory (`kiwii.jsonc`, `agent/`, `command/`, `skill/`, `plugin/`, `tool/`, `themes/`, `memory/`), then `KIWII_CONFIG_DIR`.
@@ -43,3 +53,13 @@ Configuration is merged in this order (later wins): global `~/.config/kiwii/kiwi
 **Claude Code compatibility:** Kiwii also imports `permissions`, `hooks` and `env` from `~/.claude/settings.json`, `.claude/settings.json` and `.claude/settings.local.json` at the lowest priority, plus `.claude/commands/*.md`, `.claude/agents/*.md`, `.claude/skills/` and `CLAUDE.md`. Disable with `KIWII_DISABLE_CLAUDE_CODE=1`.
 
 Point your editor at the schema: `"$schema": "https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/schema/config.json"`. The main keys are shown in the snippet above: `model`, `small_model`, `permission_mode`, `permission` (native ruleset, later rules win), `permissions` (Claude Code lists), `hooks`, `memory`, `websearch`, `instructions`, `agent`, `command`, `mcp`, `provider`, `compaction`.
+
+### Configuration stability
+
+From 1.0.0 on, `kiwii.json` follows semver:
+
+- **Adding a key** is a minor release. Existing configs keep working untouched.
+- **Removing or renaming a key, changing its type, or changing what a default means** is a breaking change and waits for a major.
+- Keys under `experimental` are outside this promise and may change at any time.
+
+The top-level key set is pinned in `packages/kiwii/test/config/schema-stability.test.ts`. That test going red means you are making a breaking change — decide deliberately before editing the list.
