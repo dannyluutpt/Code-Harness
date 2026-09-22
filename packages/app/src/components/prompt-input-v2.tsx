@@ -13,7 +13,7 @@ import type { PromptInputProps } from "@/components/prompt-input/contracts"
 import { normalizePromptHistoryEntry, promptLength, type PromptHistoryComment } from "@/components/prompt-input/history"
 import { createPersistedPromptInputHistory } from "@/components/prompt-input/history-store"
 import { promptDesignPlaceholder, promptPlaceholder } from "@/components/prompt-input/placeholder"
-import { PromptPermissionModeControl } from "@/components/prompt-input/permission-mode"
+import { PromptPermissionModeControl, usePermissionMode } from "@/components/prompt-input/permission-mode"
 import { useSlashCommandRunner } from "@/components/prompt-input/slash-command"
 import { createPromptSubmit } from "@/components/prompt-input/submit"
 import { selectionFromLines, type SelectedLineRange, useFile } from "@/context/file"
@@ -50,11 +50,13 @@ export function PromptInputV2Composer(props: PromptInputV2ComposerProps) {
   const dialog = useDialog()
   const command = useCommand()
   const language = useLanguage()
+  const permissionMode = usePermissionMode()
 
   return (
     <div class="flex flex-col gap-3">
       <PromptInputV2
         controller={props.controller}
+        accent={permissionMode.accent()}
         borderUnderlay={props.borderUnderlay}
         class={props.class}
         variantControlVisible={!props.controller.model.loading}

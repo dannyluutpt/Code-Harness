@@ -29,6 +29,18 @@ const DESCRIPTIONS = {
   bypassPermissions: "permission.mode.bypassPermissions.description",
 } as const
 
+/**
+ * One accent per mode, matching the TUI's prompt border: manual green, accept edits yellow, plan blue,
+ * auto orange, bypass red. The composer border and this menu read the same map so they never disagree.
+ */
+export const MODE_ACCENTS = {
+  default: "var(--v2-state-fg-success)",
+  acceptEdits: "var(--v2-state-fg-warning)",
+  plan: "var(--v2-state-fg-info)",
+  auto: "var(--v2-state-fg-caution)",
+  bypassPermissions: "var(--v2-state-fg-danger)",
+} as const satisfies Record<ConfigPermissionV1.Mode, string>
+
 /** Names accepted by `/permissions <mode>`, matching the TUI. */
 export const PERMISSION_MODE_ALIASES: Record<string, ConfigPermissionV1.Mode> = {
   default: "default",
@@ -62,6 +74,7 @@ export function usePermissionMode() {
 
   return {
     current,
+    accent: () => MODE_ACCENTS[current()],
     label: (mode: ConfigPermissionV1.Mode) => language.t(LABELS[mode]),
     set(next: ConfigPermissionV1.Mode) {
       const previous = current()
@@ -104,7 +117,7 @@ export function PromptPermissionModeControl(props: { onClose: () => void }) {
           variant="ghost-muted"
           size="normal"
           class="max-w-[220px] justify-start ![font-weight:440]"
-          classList={{ "!text-[var(--v2-state-fg-warning)]": mode.current() === "bypassPermissions" }}
+          style={{ color: mode.accent() }}
           aria-label={language.t("permission.mode.title")}
           data-action="prompt-permission-mode"
         >
@@ -123,9 +136,7 @@ export function PromptPermissionModeControl(props: { onClose: () => void }) {
                 {(item) => (
                   <MenuV2.RadioItem value={item} class="!h-auto !py-1.5" closeOnSelect>
                     <span class="flex min-w-0 flex-col gap-1.5">
-                      <span classList={{ "text-[var(--v2-state-fg-warning)]": item === "bypassPermissions" }}>
-                        {mode.label(item)}
-                      </span>
+                      <span style={{ color: MODE_ACCENTS[item] }}>{mode.label(item)}</span>
                       <span class="text-[12px] text-v2-text-text-faint">{language.t(DESCRIPTIONS[item])}</span>
                     </span>
                   </MenuV2.RadioItem>
