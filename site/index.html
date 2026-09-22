@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="vi" data-lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kiwii — Coding agent chạy trên máy của bạn</title>
+    <meta
+      name="description"
+      content="Kiwii là coding agent cho terminal và trình duyệt, chạy hoàn toàn trên máy của bạn. Ngang Claude Code và Codex CLI, không gọi về máy chủ nào ngoài nhà cung cấp mô hình bạn chọn."
+    />
+    <link rel="icon" href="logo.png" type="image/png" />
+    <link rel="apple-touch-icon" href="logo.png" />
+    <meta property="og:title" content="Kiwii — Coding agent chạy trên máy của bạn" />
+    <meta
+      property="og:description"
+      content="Coding agent cho terminal và trình duyệt. Local-first, tương thích Claude Code, hơn 150 provider."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kiwii.luuhoanghiep.com/" />
+    <meta property="og:image" content="https://kiwii.luuhoanghiep.com/logo.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0b0d09" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a class="brand" href="#top">
+        <img src="logo.png" alt="" width="28" height="28" />
+        <span>kiwii</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#features"><i lang="vi">Tính năng</i><i lang="en">Features</i></a>
+        <a href="#modes"><i lang="vi">Quyền</i><i lang="en">Permissions</i></a>
+        <a href="#start"><i lang="vi">Bắt đầu</i><i lang="en">Quick start</i></a>
+        <a href="#docs"><i lang="vi">Tài liệu</i><i lang="en">Docs</i></a>
+      </nav>
+      <div class="nav-right">
+        <button id="lang" class="lang" type="button" aria-label="Switch language / Đổi ngôn ngữ">
+          <i lang="vi">EN</i><i lang="en">VI</i>
+        </button>
+        <a class="gh" href="https://github.com/dannyluutpt/Code-Harness" rel="noopener">GitHub ↗</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-text">
+          <p class="eyebrow">Local-first · MIT · Bun</p>
+          <h1>
+            <i lang="vi">Coding agent<br /><span class="accent">chạy trên máy của bạn.</span></i>
+            <i lang="en">Coding agent<br /><span class="accent">that runs on your machine.</span></i>
+          </h1>
+          <p class="lede">
+            <i lang="vi"
+              >Kiwii là harness cho AI coding agent trong terminal và trình duyệt, ngang Claude Code và Codex CLI về
+              tính năng. Nó không gọi về bất kỳ máy chủ nào ngoài nhà cung cấp mô hình bạn tự chọn.</i
+            >
+            <i lang="en"
+              >Kiwii is a coding-agent harness for your terminal and browser, on par with Claude Code and Codex CLI. It
+              talks to nothing but the model provider you configure.</i
+            >
+          </p>
+
+          <div class="install">
+            <div class="install-tabs" role="tablist">
+              <button role="tab" type="button" class="is-active" data-os="unix" aria-selected="true">
+                macOS · Linux · WSL
+              </button>
+              <button role="tab" type="button" data-os="win" aria-selected="false">Windows</button>
+            </div>
+            <div class="install-line" data-os-panel="unix">
+              <code id="cmd-unix"
+                >curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash</code
+              >
+              <button class="copy" type="button" data-copy="cmd-unix">
+                <i lang="vi">Sao chép</i><i lang="en">Copy</i>
+              </button>
+            </div>
+            <div class="install-line" data-os-panel="win" hidden>
+              <code id="cmd-win"
+                >irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex</code
+              >
+              <button class="copy" type="button" data-copy="cmd-win">
+                <i lang="vi">Sao chép</i><i lang="en">Copy</i>
+              </button>
+            </div>
+          </div>
+
+          <p class="hero-note">
+            <i lang="vi"
+              >Hoặc tải binary ở trang
+              <a href="https://github.com/dannyluutpt/Code-Harness/releases" rel="noopener">Releases</a> và đặt vào
+              <code>PATH</code>.</i
+            >
+            <i lang="en"
+              >Or grab a binary from the
+              <a href="https://github.com/dannyluutpt/Code-Harness/releases" rel="noopener">Releases</a> page and put it
+              on your <code>PATH</code>.</i
+            >
+          </p>
+        </div>
+
+        <div class="hero-term">
+          <div class="term">
+            <div class="term-bar" aria-hidden="true">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="term-title">kiwii — ~/du-an</span>
+            </div>
+            <pre class="term-body"><span class="l" style="--i:0"><span class="p">$</span> kiwii</span>
+<span class="l" style="--i:1"><span class="u">›</span> <i lang="vi">giải thích cấu trúc repo này</i><i lang="en">explain how this repo is structured</i></span>
+<span class="l dim" style="--i:2">  ⏺ Read   package.json</span>
+<span class="l dim" style="--i:3">  ⏺ Glob   packages/*/package.json</span>
+<span class="l dim" style="--i:4">  ⏺ Grep   "export default"</span>
+<span class="l" style="--i:5">  <i lang="vi">16 package, điểm vào tại </i><i lang="en">16 packages, entrypoint at </i><span class="acc">packages/kiwii/src/index.ts</span></span>
+<span class="l" style="--i:6">  <i lang="vi">CLI, TUI và Web UI dùng chung lõi ở </i><i lang="en">CLI, TUI and the web UI share the core in </i><span class="acc">packages/core</span></span>
+<span class="l" style="--i:7"><span class="u">›</span> <span class="caret" aria-hidden="true"></span></span></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="strip">
+        <div>
+          <h3><i lang="vi">Không có máy chủ nào ở giữa</i><i lang="en">No server in the middle</i></h3>
+          <p>
+            <i lang="vi"
+              >Phiên, lịch sử và mã nguồn nằm trên máy bạn. Kiwii chỉ kết nối tới nhà cung cấp mô hình bạn khai báo.</i
+            >
+            <i lang="en"
+              >Sessions, history and your code stay on your machine. Kiwii only reaches the provider you configure.</i
+            >
+          </p>
+        </div>
+        <div>
+          <h3><i lang="vi">Mở dự án cũ là chạy</i><i lang="en">Open an existing project and go</i></h3>
+          <p>
+            <i lang="vi"
+              >Đọc thẳng <code>CLAUDE.md</code>, <code>.claude/settings.json</code>, commands, agents và skills sẵn có.
+              Không cần chuyển đổi gì.</i
+            >
+            <i lang="en"
+              >Reads your existing <code>CLAUDE.md</code>, <code>.claude/settings.json</code>, commands, agents and
+              skills as they are. Nothing to migrate.</i
+            >
+          </p>
+        </div>
+        <div>
+          <h3><i lang="vi">Một binary duy nhất</i><i lang="en">One single binary</i></h3>
+          <p>
+            <i lang="vi">Không cần Node, không cần cài phụ thuộc. Tải về, đặt vào <code>PATH</code>, chạy.</i>
+            <i lang="en">No Node, no dependency tree. Download it, put it on your <code>PATH</code>, run it.</i>
+          </p>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <div class="section-head">
+          <span class="num">01</span>
+          <h2><i lang="vi">Có gì bên trong</i><i lang="en">What is in the box</i></h2>
+        </div>
+        <dl class="spec">
+          <div>
+            <dt><i lang="vi">Giao diện</i><i lang="en">Interfaces</i></dt>
+            <dd>
+              <i lang="vi"
+                >TUI trong terminal (<code>kiwii</code>) và Web UI chạy localhost (<code>kiwii web</code>).</i
+              >
+              <i lang="en">A terminal TUI (<code>kiwii</code>) and a localhost web UI (<code>kiwii web</code>).</i>
+            </dd>
+          </div>
+          <div>
+            <dt><i lang="vi">Chạy không tương tác</i><i lang="en">Headless</i></dt>
+            <dd>
+              <i lang="vi"
+                ><code>kiwii run "…"</code> với <code>--format json</code>, <code>--continue</code>,
+                <code>--session</code>. Dùng được trong script và CI.</i
+              >
+              <i lang="en"
+                ><code>kiwii run "…"</code> with <code>--format json</code>, <code>--continue</code>,
+                <code>--session</code>. Built for scripts and CI.</i
+              >
+            </dd>
+          </div>
+          <div>
+            <dt><i lang="vi">Provider</i><i lang="en">Providers</i></dt>
+            <dd>
+              <i lang="vi"
+                >Anthropic, OpenAI (API key hoặc ChatGPT Plus/Pro), Google Gemini, OpenRouter, Ollama tự phát hiện, mọi
+                endpoint OpenAI-compatible, và hơn 150 provider khác từ models.dev.</i
+              >
+              <i lang="en"
+                >Anthropic, OpenAI (API key or ChatGPT Plus/Pro login), Google Gemini, OpenRouter, auto-detected Ollama,
+                any OpenAI-compatible endpoint, and 150+ more from models.dev.</i
+              >
+            </dd>
+          </div>
+          <div>
+            <dt><i lang="vi">Hooks</i><i lang="en">Hooks</i></dt>
+            <dd>
+              <i lang="vi">Chạy lệnh shell tại </i><i lang="en">Shell commands on </i><code>PreToolUse</code>,
+              <code>PostToolUse</code>, <code>UserPromptSubmit</code>, <code>Stop</code>, <code>SessionStart</code>,
+              <code>SessionEnd</code>, <code>PreCompact</code>, <code>PermissionRequest</code>,
+              <code>Notification</code>.
+            </dd>
+          </div>
+          <div>
+            <dt><i lang="vi">Ngữ cảnh</i><i lang="en">Context</i></dt>
+            <dd>
+              <i lang="vi"
+                ><code>KIWII.md</code> (đọc cả <code>AGENTS.md</code> và <code>CLAUDE.md</code>), bộ nhớ dài hạn tự động
+                theo dự án, tự nén ngữ cảnh, tiếp tục phiên cũ.</i
+              >
+              <i lang="en"
+                ><code>KIWII.md</code> (it also reads <code>AGENTS.md</code> and <code>CLAUDE.md</code>), automatic
+                per-project long-term memory, auto-compaction, session resume.</i
+              >
+            </dd>
+          </div>
+          <div>
+            <dt><i lang="vi">Mở rộng</i><i lang="en">Extensibility</i></dt>
+            <dd>
+              <i lang="vi"
+                >MCP client (stdio/HTTP, OAuth), skills <code>SKILL.md</code> (đọc cả <code>~/.claude/skills</code>),
+                slash command viết bằng Markdown, agent con tuỳ chỉnh, plugin.</i
+              >
+              <i lang="en"
+                >MCP client (stdio/HTTP with OAuth), <code>SKILL.md</code> skills (including
+                <code>~/.claude/skills</code>), Markdown slash commands, custom subagents, plugins.</i
+              >
+            </dd>
+          </div>
+          <div>
+            <dt><i lang="vi">Tools</i><i lang="en">Tools</i></dt>
+            <dd>
+              <i lang="vi"
+                >read, write, edit, bash, glob, grep, websearch (Exa không cần key; Tavily, Brave, Parallel), webfetch,
+                LSP, ảnh, todo, </i
+              ><i lang="en"
+                >read, write, edit, bash, glob, grep, web search (Exa needs no key; Tavily, Brave, Parallel), web fetch,
+                LSP, images, todos, </i
+              ><code>/commit</code>, <code>/pr</code>, <code>/review</code>, <code>/init</code>.
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section id="modes" class="section">
+        <div class="section-head">
+          <span class="num">02</span>
+          <h2><i lang="vi">Bạn quyết định agent được làm gì</i><i lang="en">You decide what the agent may do</i></h2>
+        </div>
+        <p class="section-lede">
+          <i lang="vi"
+            >Năm chế độ quyền, đổi bằng <kbd>Shift</kbd>+<kbd>Tab</kbd> ngay giữa phiên. Khung nhập đổi màu theo chế độ
+            đang bật, nên bạn luôn biết mình đang ở đâu trước khi gõ Enter.</i
+          >
+          <i lang="en"
+            >Five permission modes, cycled with <kbd>Shift</kbd>+<kbd>Tab</kbd> mid-session. The prompt box takes the
+            colour of the active mode, so you always know where you stand before pressing Enter.</i
+          >
+        </p>
+
+        <div class="modes">
+          <div class="mode-picker" role="tablist">
+            <button
+              role="tab"
+              type="button"
+              class="is-active"
+              aria-selected="true"
+              data-mode="default"
+              style="--m: var(--mode-default)"
+            >
+              <span class="swatch"></span><i lang="vi">Thủ công</i><i lang="en">Manual</i>
+            </button>
+            <button role="tab" type="button" aria-selected="false" data-mode="accept" style="--m: var(--mode-accept)">
+              <span class="swatch"></span><i lang="vi">Tự duyệt sửa file</i><i lang="en">Accept edits</i>
+            </button>
+            <button role="tab" type="button" aria-selected="false" data-mode="plan" style="--m: var(--mode-plan)">
+              <span class="swatch"></span><i lang="vi">Lập kế hoạch</i><i lang="en">Plan</i>
+            </button>
+            <button role="tab" type="button" aria-selected="false" data-mode="auto" style="--m: var(--mode-auto)">
+              <span class="swatch"></span><i lang="vi">Tự động</i><i lang="en">Auto</i>
+            </button>
+            <button role="tab" type="button" aria-selected="false" data-mode="bypass" style="--m: var(--mode-bypass)">
+              <span class="swatch"></span><i lang="vi">Bỏ qua hỏi</i><i lang="en">Bypass</i>
+            </button>
+          </div>
+
+          <div class="mode-demo" id="mode-demo" style="--m: var(--mode-default)">
+            <div class="prompt-box">
+              <span class="u">›</span>
+              <span class="ph">
+                <i lang="vi">sửa lỗi ở module thanh toán</i><i lang="en">fix the bug in the billing module</i>
+              </span>
+              <span class="caret" aria-hidden="true"></span>
+            </div>
+
+            <div class="mode-desc">
+              <p data-desc="default">
+                <i lang="vi">Hỏi bạn trước mỗi thao tác ghi file và mỗi lệnh shell.</i>
+                <i lang="en">Asks before every file write and every shell command.</i>
+              </p>
+              <p data-desc="accept" hidden>
+                <i lang="vi">Tự duyệt sửa file, vẫn hỏi trước khi chạy lệnh.</i>
+                <i lang="en">Edits files freely, still asks before running commands.</i>
+              </p>
+              <p data-desc="plan" hidden>
+                <i lang="vi">Chỉ đọc. Agent khảo sát và đề xuất kế hoạch, không đụng vào file.</i>
+                <i lang="en">Read-only. The agent investigates and proposes a plan without touching a file.</i>
+              </p>
+              <p data-desc="auto" hidden>
+                <i lang="vi">Tự duyệt sửa file, tool chỉ đọc và các lệnh shell đã biết là an toàn; còn lại vẫn hỏi.</i>
+                <i lang="en"
+                  >Auto-approves edits, read-only tools and known-safe shell commands; asks for everything else.</i
+                >
+              </p>
+              <p data-desc="bypass" hidden>
+                <i lang="vi">Duyệt mọi thứ không nằm trong deny list. Chỉ dùng khi bạn biết rõ mình đang làm gì.</i>
+                <i lang="en"
+                  >Approves everything not explicitly denied. Only when you know exactly what you are doing.</i
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p class="section-foot">
+          <i lang="vi">Ngoài ra còn allow/deny list theo mẫu: </i
+          ><i lang="en">On top of that, allow and deny lists by pattern: </i><code>Bash(git *)</code>,
+          <code>Edit(src/**)</code>, <code>Read(.env)</code>.
+        </p>
+      </section>
+
+      <section id="start" class="section">
+        <div class="section-head">
+          <span class="num">03</span>
+          <h2><i lang="vi">Bắt đầu trong một phút</i><i lang="en">Running in a minute</i></h2>
+        </div>
+        <div class="steps">
+          <article>
+            <h3>
+              <span class="step">1</span>
+              <i lang="vi">Đăng nhập provider</i><i lang="en">Sign in to a provider</i>
+            </h3>
+            <pre><code>export ANTHROPIC_API_KEY=sk-...
+<span class="c"># <i lang="vi">hoặc</i><i lang="en">or</i></span>
+kiwii auth login</code></pre>
+          </article>
+          <article>
+            <h3><span class="step">2</span> <i lang="vi">Mở dự án</i><i lang="en">Open your project</i></h3>
+            <pre><code>cd <i lang="vi">du-an-cua-ban</i><i lang="en">your-project</i>
+kiwii                 <span class="c"># TUI</span>
+kiwii web             <span class="c"># Web UI</span></code></pre>
+          </article>
+          <article>
+            <h3><span class="step">3</span> <i lang="vi">Hoặc chạy thẳng</i><i lang="en">Or run it headless</i></h3>
+            <pre><code>kiwii run "<i lang="vi">viết test cho parser</i><i lang="en">write tests for the parser</i>"
+kiwii run "…" --format json
+kiwii -c              <span class="c"># <i lang="vi">tiếp tục phiên</i><i lang="en">continue</i></span></code></pre>
+          </article>
+        </div>
+        <p class="section-foot">
+          <i lang="vi">Gõ <code>/init</code> trong phiên đầu tiên để Kiwii tự viết <code>KIWII.md</code> cho dự án.</i>
+          <i lang="en"
+            >Run <code>/init</code> in your first session and Kiwii writes a <code>KIWII.md</code> for the project.</i
+          >
+        </p>
+      </section>
+
+      <section id="compat" class="section compat">
+        <div class="section-head">
+          <span class="num">04</span>
+          <h2><i lang="vi">Đang dùng Claude Code?</i><i lang="en">Coming from Claude Code?</i></h2>
+        </div>
+        <p class="section-lede">
+          <i lang="vi"
+            >Không phải học lại. Kiwii giữ nguyên tên lệnh, phím tắt và định dạng file cấu hình bạn đã quen.</i
+          >
+          <i lang="en"
+            >Nothing to relearn. Kiwii keeps the command names, the keys and the config files you already use.</i
+          >
+        </p>
+        <ul class="compat-grid">
+          <li><code>CLAUDE.md</code></li>
+          <li><code>.claude/settings.json</code></li>
+          <li><code>.claude/commands</code></li>
+          <li><code>.claude/agents</code></li>
+          <li><code>.claude/skills</code></li>
+          <li><code>/clear</code> <code>/model</code> <code>/mcp</code></li>
+          <li><code>/login</code> <code>/rewind</code> <code>/resume</code></li>
+          <li><code>-p</code> <code>-c</code> <code>-r</code></li>
+          <li><kbd>Shift</kbd>+<kbd>Tab</kbd></li>
+          <li><code>#</code> <i lang="vi">ghi chú</i><i lang="en">note</i></li>
+        </ul>
+      </section>
+
+      <section id="docs" class="section">
+        <div class="section-head">
+          <span class="num">05</span>
+          <h2><i lang="vi">Tài liệu</i><i lang="en">Documentation</i></h2>
+        </div>
+        <div class="docs">
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/install.md" rel="noopener">
+            <span><i lang="vi">Cài đặt</i><i lang="en">Install</i></span>
+            <small
+              ><i lang="vi">Script, binary, build từ nguồn</i
+              ><i lang="en">Scripts, binaries, building from source</i></small
+            >
+          </a>
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/cli.md" rel="noopener">
+            <span>CLI</span>
+            <small
+              ><i lang="vi">Lệnh, cờ, phím tắt, slash command</i
+              ><i lang="en">Commands, flags, keys, slash commands</i></small
+            >
+          </a>
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/config.md" rel="noopener">
+            <span><i lang="vi">Cấu hình</i><i lang="en">Configuration</i></span>
+            <small><i lang="vi">kiwii.json và thứ tự gộp</i><i lang="en">kiwii.json and the merge order</i></small>
+          </a>
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/permissions.md" rel="noopener">
+            <span><i lang="vi">Quyền</i><i lang="en">Permissions</i></span>
+            <small><i lang="vi">Chế độ, allow/deny, mẫu</i><i lang="en">Modes, allow and deny, patterns</i></small>
+          </a>
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/hooks.md" rel="noopener">
+            <span>Hooks</span>
+            <small
+              ><i lang="vi">Chín điểm móc, payload, exit code</i
+              ><i lang="en">Nine hook points, payloads, exit codes</i></small
+            >
+          </a>
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/mcp.md" rel="noopener">
+            <span>MCP</span>
+            <small><i lang="vi">Server stdio và HTTP, OAuth</i><i lang="en">stdio and HTTP servers, OAuth</i></small>
+          </a>
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/skills-commands.md" rel="noopener">
+            <span><i lang="vi">Skills &amp; lệnh</i><i lang="en">Skills &amp; commands</i></span>
+            <small><i lang="vi">SKILL.md và slash command</i><i lang="en">SKILL.md and slash commands</i></small>
+          </a>
+          <a href="https://github.com/dannyluutpt/Code-Harness/blob/main/docs/providers.md" rel="noopener">
+            <span><i lang="vi">Provider</i><i lang="en">Providers</i></span>
+            <small
+              ><i lang="vi">Đăng nhập, model, endpoint riêng</i><i lang="en">Auth, models, custom endpoints</i></small
+            >
+          </a>
+        </div>
+      </section>
+
+      <section class="cta">
+        <h2><i lang="vi">Cài trong một dòng</i><i lang="en">One line to install</i></h2>
+        <div class="install-line solo">
+          <code id="cmd-cta"
+            >curl -fsSL https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install | bash</code
+          >
+          <button class="copy" type="button" data-copy="cmd-cta"><i lang="vi">Sao chép</i><i lang="en">Copy</i></button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="foot-left">
+        <img src="logo.png" alt="" width="22" height="22" />
+        <span>Kiwii</span>
+        <span class="sep">·</span>
+        <span><i lang="vi">Giấy phép MIT</i><i lang="en">MIT licensed</i></span>
+      </div>
+      <div class="foot-right">
+        <a href="https://github.com/dannyluutpt/Code-Harness" rel="noopener">GitHub</a>
+        <a href="https://github.com/dannyluutpt/Code-Harness/releases" rel="noopener"
+          ><i lang="vi">Bản phát hành</i><i lang="en">Releases</i></a
+        >
+        <a href="https://github.com/dannyluutpt/Code-Harness/issues" rel="noopener">Issues</a>
+      </div>
+    </footer>
+
+    <script src="main.js"></script>
+  </body>
+</html>
