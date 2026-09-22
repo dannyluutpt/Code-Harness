@@ -5,22 +5,24 @@ byte for byte what gets served.
 
 ## Deployment
 
-Cloudflare Pages, connected to this repository. Every push to `main` redeploys.
+A Cloudflare Worker serving static assets, configured in `wrangler.jsonc` at the
+repo root. There is no `main`, so no script runs: every request is answered from
+this directory. Same shape as the account's other static sites.
 
-| Setting          | Value     |
-| ---------------- | --------- |
-| Framework preset | None      |
-| Build command    | _(empty)_ |
-| Output directory | `site`    |
-| Branch           | `main`    |
+```sh
+bunx wrangler@latest deploy    # from the repo root
+```
 
-There is no build step, so nothing needs installing and the deploy is a file
-upload. The custom domain is attached in the Pages project, and because
-`luuhoanghiep.com` is already on Cloudflare the DNS record is created there
-rather than by hand.
+Connecting the repository to [Workers
+Builds](https://developers.cloudflare.com/workers/ci-cd/) deploys it on every
+push to `main` instead; set the build command to nothing and leave the root
+directory at the repo root, since `wrangler.jsonc` already points at `site`.
 
-Set **Build watch paths** to `site/*` in the project settings if you would
-rather not redeploy on every unrelated commit.
+`.assetsignore` keeps this README out of the upload — everything else in here is
+public.
+
+The custom domain is attached to the Worker. `luuhoanghiep.com` is already on
+Cloudflare, so the DNS record comes with it rather than being added by hand.
 
 ## Working on it locally
 
