@@ -19,6 +19,10 @@ const SEQUENCES = [
 
 export const RESET = SEQUENCES.join("")
 
+// SIGHUP is left out: the terminal is going away with the process, and the app already answers it by
+// destroying the renderer, which tears down cleanly. These two are the ones the terminal outlives.
+const SIGNALS = ["SIGINT", "SIGTERM"] as const
+
 let installed = false
 
 /**
@@ -29,8 +33,22 @@ export function installTerminalReset(write: (text: string) => void = defaultWrit
   if (installed) return () => {}
   installed = true
   const reset = () => write(RESET)
+  // A signal nothing else listens for kills the process outright, without running "exit" handlers, so
+  // reset here and then re-raise it to keep that default. Any other listener owns both the shutdown
+  // and the terminal — Ctrl-c clearing a draft leaves the session running — so then we stay out of it.
+  const handlers = SIGNALS.map((signal) => {
+    const handler = () => {
+      if (process.listenerCount(signal) > 1) return
+      reset()
+      process.off(signal, handler)
+      process.kill(process.pid, signal)
+    }
+    process.on(signal, handler)
+    return { signal, handler }
+  })
   process.on("exit", reset)
   return () => {
+    handlers.forEach((entry) => process.off(entry.signal, entry.handler))
     process.off("exit", reset)
     installed = false
   }
