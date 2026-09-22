@@ -7,7 +7,7 @@
 .EXAMPLE
   irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
 .EXAMPLE
-  $env:VERSION = "0.3.1"; irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
+  $env:VERSION = "0.3.2"; irm https://raw.githubusercontent.com/dannyluutpt/Code-Harness/main/install.ps1 | iex
 #>
 $ErrorActionPreference = "Stop"
 
